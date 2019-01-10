@@ -108,16 +108,16 @@ def tarkista_prosentit(filename):
     koodi = filename.split('/')[-1].split('_')[0]
     pros = prosentit(filename)
     hepat = hepoja(koodi)
-    print('<<< Ravit ' + koodi + ' >>>')
+    print('        <<< Ravit ' + koodi + ' >>>')
     for lahto in pros.keys():
         pros_lahto = pros[lahto]
         summa = sum(pros_lahto)
         if summa != 100:
-            print('Lähtö ' + lahto + ': Prosenttien summa ei ole 100 (' +
-                  str(summa) + ')')
+            print('        Lähtö ' + lahto +
+                  ': Prosenttien summa ei ole 100 (' + str(summa) + ')')
         poissa = hepat[lahto]['poissa']
         for pois in poissa:
             if pros_lahto[pois - 1] > 0:
-                print('Lähtö ' + lahto + ': Numero ' + str(pois) +
+                print('        Lähtö ' + lahto + ': Numero ' + str(pois) +
                       ' on poissa')
-    print('================')
+    print('        ================')
