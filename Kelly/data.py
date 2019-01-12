@@ -2,6 +2,9 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import datetime
+import zipfile
+from pathlib import Path
+import os
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
@@ -25,6 +28,23 @@ def kertoimet(koodi, lahto, peli):
     url = BASEURL + koodi + '_' + pvm + '_R' + lahto + '_' + peli + '.xml'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'xml')
+    return soup
+
+
+def Tkertoimet(koodi, lahto, peli):
+    pvm = datetime.datetime.now().strftime('%d%m%Y')
+    pelifile = koodi + '_' + pvm + '_R' + lahto + '_' + peli+'.xml'
+    pelizip = pelifile + '.zip'
+    url = BASEURL + pelizip
+    response = requests.get(url)
+    cwd = Path.cwd()
+    with zipfile.ZipFile(response.content) as zf:
+        zf.extract(pelifile, cwd)
+    kerroinxml = open(pelifile)
+    soup = BeautifulSoup(kerroinxml, 'xml')
+    os.remove(pelizip)
+    kerroinxml.close()
+    os.remove(pelifile)
     return soup
 
 
