@@ -76,30 +76,27 @@ def p_3(p):
     return p3p
 
 
-def yhdistelma_ok(yhdistelma, duo):
+def yhdistelma_ok(yhdistelma, systeemi):
     laskuri = 0
     oukkidoukki = False
     for lahto in range(1, len(yhdistelma)+1):
         lstr = 'L' + str(lahto)
-        if yhdistelma[lahto-1] in duo[lstr]:
+        if yhdistelma[lahto-1] in systeemi[lstr]:
             laskuri += 1
-    if laskuri >= duo['oikein']:
+    if laskuri >= systeemi['oikein']:
         oukkidoukki = True
     return oukkidoukki
 
 
 def troikka_yhdistelma_ok(yhdistelma, systeemi):
-    mini = systeemi[0][0]
     laskuri = 0
     oukkidoukki = False
-    for l in range(0, 3):
-        for m in range(0, len(systeemi[1])):
-            if yhdistelma[l] == systeemi[1][m]:
-                laskuri += 1
-        for n in range(0, len(systeemi[2])):
-            if yhdistelma[l] == systeemi[2][n]:
-                laskuri = -10
-    if laskuri >= mini:
+    for y in yhdistelma:
+        if y in systeemi['ideat']:
+            laskuri += 1
+        if y in systeemi['tapot']:
+            laskuri -= 10
+    if laskuri >= systeemi['ideoita']:
         oukkidoukki = True
     return oukkidoukki
 
@@ -121,3 +118,78 @@ def tarkista_prosentit(filename):
                 print('        Lähtö ' + lahto + ': Numero ' + str(pois) +
                       ' on poissa')
     print('        ================')
+
+
+def analyysi(pelifile):
+    pelif = open(pelifile)
+    rivi = []
+    rivi0 = pelif.readline().split(';')
+    rivi = [int(x) for x in rivi0[4].split('/')]
+    panos = float(rivi0[5])
+    pelit = {'DUO': 2, 'TRO': 3, 'T4': 4, 'T5': 5, 'T6': 6, 'T65': 6,
+             'T7': 7, 'T75': 7}
+    lahtoja = pelit[rivi0[3]]
+    laskuri = [[0 for i in range(16)] for j in range(lahtoja)]
+    kokpanos = [[0.0 for i in range(16)] for j in range(lahtoja)]
+    riveja = 0
+    total = 0.0
+    while True:
+        for ll in range(lahtoja):
+            # print ll
+            laskuri[ll][rivi[ll]] += 1
+            kokpanos[ll][rivi[ll]] += panos
+        rivi0 = pelif.readline().split(';')
+        if rivi0[0] == 'Yht':
+            riveja = rivi0[1]
+            total = rivi0[2]
+            break
+        else:
+            rivi = [int(x) for x in rivi0[4].split('/')]
+            panos = float(rivi0[5])
+    print('Rastit' + str(riveja))
+    for i in range(16):
+        print('{0:3d} |'.format(i+1), end="")
+    print('')
+    for i in range(16):
+        print('=====', end="")
+    print('')
+    for ll in range(lahtoja):
+        for h in range(16):
+            print('{0:3d} |'.format(laskuri[ll][h]), end="")
+        print('')
+    print('Rastit ')
+    a = 0
+    for i in range(16):
+        print('{0:3d} |'.format(i+1), end="")
+    print('')
+    for i in range(16):
+        print('==== ', end="")
+    print('')
+    for ll in range(lahtoja):
+        a = 0
+        for h in range(16):
+            print('{0:3d} |'.format(laskuri[ll][h]), end="")
+            a += laskuri[ll][h]
+        print(a)
+    print('%-osuudet')
+    for i in range(16):
+        print('{0:3d} |'.format(i+1), end="")
+    print('')
+    for i in range(16):
+        print('=====', end="")
+    print('')
+    for ll in range(lahtoja):
+        for h in range(16):
+            print('{0:3.0f} |'.format(100*float(laskuri[ll][h])/float(riveja)), end="")
+        print('')
+    print('%-osuudet rahasta')
+    for i in range(16):
+        print('{0:3d} |'.format(i+1), end="")
+    print('')
+    for i in range(16):
+        print('=====', end="")
+    print('')
+    for ll in range(lahtoja):
+        for h in range(16):
+            print('{0:3.0f} |'.format(100*float(kokpanos[ll][h])/float(total)), end="")
+        print('')
