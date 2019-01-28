@@ -2,9 +2,8 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import datetime
-import zipfile
-from pathlib import Path
-import os
+from zipfile import ZipFile
+from io import BytesIO
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
@@ -28,7 +27,16 @@ def kertoimet(koodi, lahto, peli):
     url = BASEURL + koodi + '_' + pvm + '_R' + lahto + '_' + peli + '.xml'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'xml')
-    return soup
+    kerroindata = soup.find('pool')
+    data = {
+        'vaihto': float(kerroindata['net-sales'].replace(',', '.')),
+        'jako': float(kerroindata['net-pool'].replace(',', '.')),
+        'lyhenne': soup.card['code'],
+        'pvm': soup.card['date'][0:5],
+        'peli': kerroindata['type'],
+        'kertoimet': soup.find_all('probable')
+    }
+    return data
 
 
 def Tkertoimet(koodi, lahto, peli):
@@ -37,15 +45,34 @@ def Tkertoimet(koodi, lahto, peli):
     pelizip = pelifile + '.zip'
     url = BASEURL + pelizip
     response = requests.get(url)
-    cwd = Path.cwd()
-    with zipfile.ZipFile(response.content) as zf:
-        zf.extract(pelifile, cwd)
-    kerroinxml = open(pelifile)
+    zipfile = ZipFile(BytesIO(response.content))
+    kerroinxml = zipfile.open(pelifile).read()
     soup = BeautifulSoup(kerroinxml, 'xml')
-    os.remove(pelizip)
-    kerroinxml.close()
-    os.remove(pelifile)
-    return soup
+    kerroindata = soup.find('pool')
+    data = {
+        'vaihto': float(kerroindata['net-sales'].replace(',', '.')),
+        'jako': float(kerroindata['net-pool'].replace(',', '.')),
+        'lyhenne': soup.card['code'],
+        'pvm': soup.card['date'][0:5],
+        'peli': kerroindata['type'],
+        'kertoimet': soup.find_all('probable')
+    }
+    return data
+
+
+def Tprosentit(koodi, lahto, peli):
+    pvm = datetime.datetime.now().strftime("%d%m%Y")
+    url = BASEURL + koodi + '_' + pvm + '_R' + lahto + '_' + peli + '_percs.xml'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'xml')
+    all_perc = {}
+    for leg in soup.find_all('leg-percentages'):
+        legno = leg['leg']
+        pr = []
+        for perc in leg.find_all('percentage'):
+            pr.append(float(perc.string.replace(',', '.')))
+        all_perc[legno] = pr
+    return all_perc
 
 
 def hepoja(koodi):
