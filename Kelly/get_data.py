@@ -4,15 +4,17 @@ from bs4 import BeautifulSoup
 import datetime
 from zipfile import ZipFile
 from io import BytesIO
+from collections import namedtuple
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
+metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
 
 
 def prosentit(filename):
-    prosfile = open(filename)
-    lines = prosfile.read()
-    pros = json.loads(lines)
+    with open(filename, 'r') as prosfile:
+        lines = prosfile.read()
+        pros = json.loads(lines)
     return pros
 
 
@@ -22,45 +24,45 @@ def listat():
     return soup.find_all('card')
 
 
-def kertoimet(koodi, lahto, peli):
+def kertoimet(koodi, lahto, peli, compressed=False):
+    koodi, lahto, peli = _validate_params(koodi, lahto, peli)
     pvm = datetime.datetime.now().strftime("%d%m%Y")
-    url = BASEURL + koodi + '_' + pvm + '_R' + lahto + '_' + peli + '.xml'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'xml')
-    kerroindata = soup.find('pool')
-    data = {
-        'vaihto': float(kerroindata['net-sales'].replace(',', '.')),
-        'jako': float(kerroindata['net-pool'].replace(',', '.')),
-        'lyhenne': soup.card['code'],
-        'pvm': soup.card['date'][0:5],
-        'peli': kerroindata['type'],
-        'kertoimet': soup.find_all('probable')
-    }
-    return data
-
-
-def Tkertoimet(koodi, lahto, peli):
-    pvm = datetime.datetime.now().strftime('%d%m%Y')
     pelifile = koodi + '_' + pvm + '_R' + lahto + '_' + peli+'.xml'
-    pelizip = pelifile + '.zip'
-    url = BASEURL + pelizip
-    response = requests.get(url)
-    zipfile = ZipFile(BytesIO(response.content))
-    kerroinxml = zipfile.open(pelifile).read()
+    url = BASEURL + pelifile
+    if compressed:
+        response = requests.get(url + '.zip')
+        with ZipFile(BytesIO(response.content)) as zipped_file:
+            kerroinxml = zipped_file.open(pelifile).read()
+    else:
+        response = requests.get(url)
+        kerroinxml = response.content
     soup = BeautifulSoup(kerroinxml, 'xml')
     kerroindata = soup.find('pool')
-    data = {
-        'vaihto': float(kerroindata['net-sales'].replace(',', '.')),
-        'jako': float(kerroindata['net-pool'].replace(',', '.')),
-        'lyhenne': soup.card['code'],
-        'pvm': soup.card['date'][0:5],
-        'peli': kerroindata['type'],
-        'kertoimet': soup.find_all('probable')
-    }
-    return data
+    data = metadata(
+        vaihto=float(kerroindata['net-sales'].replace(',', '.')),
+        jako=float(kerroindata['net-pool'].replace(',', '.')),
+        lyhenne=soup.card['code'],
+        pvm=soup.card['date'][0:5],
+        peli=kerroindata['type'])
+    kerroin_gen = _kerroin_gen(soup)
+    return data, kerroin_gen
+
+
+def _validate_params(koodi, lahto, peli):
+    if isinstance(koodi, int):
+        koodi = str(koodi)
+    if isinstance(lahto, int):
+        lahto = str(lahto)
+    return koodi, lahto, peli.lower()
+
+
+def _kerroin_gen(soup):
+    for kerroin in soup.find_all('probable'):
+        yield kerroin
 
 
 def Tprosentit(koodi, lahto, peli):
+    koodi, lahto, peli = _validate_params(koodi, lahto, peli)
     pvm = datetime.datetime.now().strftime("%d%m%Y")
     url = BASEURL + koodi + '_' + pvm + '_R' + lahto + '_' + peli + '_percs.xml'
     response = requests.get(url)
@@ -76,7 +78,7 @@ def Tprosentit(koodi, lahto, peli):
 
 
 def hepoja(koodi):
-    if type(koodi) == int:
+    if isinstance(koodi, int):
         koodi = str(koodi)
     kaikki_ravit = listat()
     pvm = datetime.datetime.now().strftime('%d.%m.%Y')
