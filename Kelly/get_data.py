@@ -15,10 +15,7 @@ def prosentit(filename):
     with open(filename, 'r') as prosfile:
         lines = prosfile.read()
         pros = json.loads(lines)
-    for lahto in pros.keys():
-        pros_summa = sum(pros[lahto])
-        if pros_summa != 100:
-            raise Exception(f'Lähtö {lahto}: prosenttien summa {pros_summa}')
+    tarkista_prosentit(pros, filename)
     return pros
 
 
@@ -136,11 +133,11 @@ def p_3(p):
 def yhdistelma_ok(yhdistelma, systeemi):
     laskuri = 0
     oukkidoukki = False
-    for lahto in range(1, len(yhdistelma)+1):
+    for lahto in range(1, systeemi['lahtoja'] + 1):
         lstr = 'L' + str(lahto)
         if yhdistelma[lahto-1] in systeemi[lstr]:
             laskuri += 1
-    if laskuri >= systeemi['oikein']:
+    if laskuri >= systeemi['omia']:
         oukkidoukki = True
     return oukkidoukki
 
@@ -158,23 +155,18 @@ def troikka_yhdistelma_ok(yhdistelma, systeemi):
     return oukkidoukki
 
 
-def tarkista_prosentit(filename):
+def tarkista_prosentit(pros, filename):
     koodi = filename.split('/')[-1].split('_')[0]
-    pros = prosentit(filename)
     hepat = hepoja(koodi)
-    print('        <<< Ravit ' + koodi + ' >>>')
     for lahto in pros.keys():
         pros_lahto = pros[lahto]
         summa = sum(pros_lahto)
         if summa != 100:
-            print('        Lähtö ' + lahto +
-                  ': Prosenttien summa ei ole 100 (' + str(summa) + ')')
+            raise Exception(f'Lähtö {lahto}: prosenttien summa {summa}')
         poissa = hepat[lahto]['poissa']
         for pois in poissa:
             if pros_lahto[pois - 1] > 0:
-                print('        Lähtö ' + lahto + ': Numero ' + str(pois) +
-                      ' on poissa')
-    print('        ================')
+                raise Exception('Lähtö {lahto}: Numero {pois} on poissa')
 
 
 def analyysi(pelifile):
