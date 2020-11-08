@@ -15,6 +15,10 @@ def prosentit(filename):
     with open(filename, 'r') as prosfile:
         lines = prosfile.read()
         pros = json.loads(lines)
+    for lahto in pros.keys():
+        pros_summa = sum(pros[lahto])
+        if pros_summa != 100:
+            raise Exception(f'Lähtö {lahto}: prosenttien summa {pros_summa}')
     return pros
 
 
@@ -29,11 +33,11 @@ def kertoimet(koodi, lahto, peli, compressed=False):
     pvm = datetime.datetime.now().strftime("%d%m%Y")
     pelifile = koodi + '_' + pvm + '_R' + lahto + '_' + peli+'.xml'
     url = BASEURL + pelifile
-    if compressed:
+    if compressed:  # T-pelit
         response = requests.get(url + '.zip')
         with ZipFile(BytesIO(response.content)) as zipped_file:
             kerroinxml = zipped_file.open(pelifile).read()
-    else:
+    else:  # muut
         response = requests.get(url)
         kerroinxml = response.content
     soup = BeautifulSoup(kerroinxml, 'xml')
@@ -95,6 +99,10 @@ def hepoja(koodi):
                 data['poissa'] = poissa
                 hepot[lahto['number']] = data
     return hepot
+
+
+def kelly(kerroin, oma_kerroin):
+    return (kerroin - oma_kerroin) / (kerroin - 1) / oma_kerroin
 
 
 def p_2(p):
