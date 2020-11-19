@@ -5,6 +5,8 @@ import datetime
 from zipfile import ZipFile
 from io import BytesIO
 from collections import namedtuple
+from itertools import product
+from more_itertools import distinct_permutations
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
@@ -153,6 +155,25 @@ def troikka_yhdistelma_ok(yhdistelma, systeemi):
     if laskuri >= systeemi['ideoita']:
         oukkidoukki = True
     return oukkidoukki
+
+
+def hajotus_rivit(systeemi, hajotus):
+    """
+    In:
+        systeemi:  T-pelin tiedot
+        hajotus:   lista hajotuksia
+    Out:
+        rivit:     hajotuksen mukaiset rivit systeemistä
+    """
+    rivit = []
+    for hajos in hajotus:
+        for permutation in distinct_permutations(hajos):
+            perm_yhd = []
+            for lahto, kategoria in enumerate(permutation, 1):
+                perm_yhd.append(systeemi['L'][str(lahto)][kategoria])
+            for rivi in product(*perm_yhd):
+                rivit.append(rivi)
+    return rivit
 
 
 def tarkista_prosentit(pros, filename):
