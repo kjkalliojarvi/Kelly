@@ -13,12 +13,16 @@ BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
 metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
 
 
+def get_json(filename):
+    with open(filename, 'r') as rawfile:
+        jsonfile = json.loads(rawfile.reads())
+    return jsonfile
+
+
 def prosentit(filename):
-    with open(filename, 'r') as prosfile:
-        lines = prosfile.read()
-        pros = json.loads(lines)
-    tarkista_prosentit(pros, filename)
-    return pros
+    prosentit = get_json(filename)
+    tarkista_prosentit(prosentit, filename)
+    return prosentit
 
 
 def listat():
