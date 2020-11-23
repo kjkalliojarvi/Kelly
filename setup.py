@@ -25,15 +25,11 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
-    description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
+    description="Kelly betting",
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
@@ -47,4 +43,9 @@ setup(
     url='https://github.com/kjkalliojarvi/Kelly',
     version='0.1.0',
     zip_safe=False,
+    entry_points={
+        'console_scripts':[
+            'kelly=Kelly.__main__:kelly'
+        ]
+    },
 )

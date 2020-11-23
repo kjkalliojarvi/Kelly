@@ -15,7 +15,7 @@ metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
 
 def get_json(filename):
     with open(filename, 'r') as rawfile:
-        jsonfile = json.loads(rawfile.reads())
+        jsonfile = json.loads(rawfile.read())
     return jsonfile
 
 
@@ -152,11 +152,11 @@ def troikka_yhdistelma_ok(yhdistelma, systeemi):
     laskuri = 0
     oukkidoukki = False
     for y in yhdistelma:
-        if y in systeemi['ideat']:
+        if y in systeemi['omat']:
             laskuri += 1
-        if y in systeemi['tapot']:
+        if y in systeemi['tappo']:
             laskuri -= 10
-    if laskuri >= systeemi['ideoita']:
+    if laskuri >= systeemi['omia']:
         oukkidoukki = True
     return oukkidoukki
 
