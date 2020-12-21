@@ -17,9 +17,7 @@ def voittaja(args, prosentit, metadata, kertoimet):
         if vkerr > omavk:
             kelly = get_data.kelly(vkerr, omavk)
             if kelly > 0.05:
-                print(str(num) + ': ' + '{0:.1f}'.format(vkerr) + ' / ' +
-                      '{0:.1f}'.format(omavk) + ' / ' +
-                      '{0:.1f}'.format(100*kelly) + ' %')
+                print(f'{num:2}: {vkerr:3.1f} / {omavk:3.1f} / {100*kelly:3.1f} %')
     print('----- * -----')
 
 
@@ -35,7 +33,7 @@ def sija(args, prosentit, metadata, kertoimet):
         sijap = p1[num-1] + p2[num-1] + p3[num-1]
         if sijap > .2:
             if 1/sijap < yla:
-                print(str(num) + ': ' + haar + ' / ' + '{0:.2f}'.format(1/sijap))
+                print(f'{num:2}: {haar} / {1/sijap:2.2f}')
     print('----- * -----')
 
 
@@ -52,7 +50,8 @@ def kaksari(args, prosentit, metadata, kertoimet):
         if kkerr > omakk:
             kelly = get_data.kelly(kkerr, omakk)
             if kelly > 0.01:
-                print(kaksari['combination']+': '+'{0:.1f}'.format(kkerr)+' / '+'{0:.1f}'.format(omakk)+' / '+'{0:.1f}'.format(100*kelly)+' %')
+                print(f'{kaksari["combination"]:>5}: '
+                      f'{kkerr:5.1f} / {omakk:4.1f} / {100*kelly:4.1f} %')
     print('----- * -----')
 
 
@@ -97,25 +96,26 @@ def duo(args, prosentit, metadata, kertoimet):
                             minlunde = lunde
                         if lunde > maxlunde:
                             maxlunde = lunde
-                        txt = metadata.lyhenne + ';' + metadata.pvm + ';'\
-                            + lahto1 + ';' + metadata.peli + ';'\
-                            + yhd['combination'].replace('-', '/') + ';'
-                        ps = '{0:.1f}'.format(kertaa * duo['panos'])
-                        print(txt + ps + ';' + ps)
-                        pelifile.write(txt + ps + ';' + ps + '\n')
-        print('Yht;' + str(lkm) + ';' + '{0:.1f}'.format(total))
-        pelifile.write('Yht;' + str(lkm) + ';' + '{0:.1f}'.format(total))
+                        txt = (
+                            f'{metadata.lyhenne};{metadata.pvm};{lahto1};'
+                            f'{metadata.peli};{yhd["combination"].replace("-", "/")};'
+                            f'{kertaa*duo["panos"]:.1f};{kertaa*duo["panos"]:.1f}'
+                            )
+                        print(f'{txt}  =>  {kerroin}')
+                        pelifile.write(txt + '\n')
+        print(f'Yht;{lkm};{total:.1f}')
+        pelifile.write(f'Yht;{lkm};{total:.1f}')
     print('<<<<<>>>>>')
     tomatn = 0.0
     if omatn > 0.0001:
         tomatn = total / omatn
-    print('Oma todennäköisyys: ' + '{0:.1f}'.format(100*omatn) + ' % // ' +
-          '{0:.1f}'.format(tomatn))
+    print(f'Oma todennäköisyys: {omatn:.1f} % // {tomatn:.1f}')
     print(f'Vaihto: {metadata.vaihto} / Jako: {metadata.jako}')
     try:
-        print('Min: ' + '{0:.1f}'.format(minlunde) + ' / Average: ' +
-              '{0:.1f}'.format(avelunde/omatn) +
-              ' / Max: ' + '{0:.1f}'.format(maxlunde))
+        print(
+            f'Min: {minlunde:.1f} / Average: {avelunde/omatn:.1f} / '
+            f'Max: {maxlunde:.1f}'
+            )
     except ZeroDivisionError:
         pass
     print('<<<<<>>>>>')
@@ -158,24 +158,25 @@ def troikka(args, prosentit, metadata, kertoimet):
                             minlunde = lunde
                         if lunde > maxlunde:
                             maxlunde = lunde
-                        txt = metadata.lyhenne + ';' + metadata.pvm + ';'\
-                            + args.lahto + ';' + metadata.peli + ';'\
-                            + yhd['combination'].replace('-', '/') + ';'
-                        ps = '{0:.1f}'.format(kertaa * troikka['panos'])
-                        print(txt + ps + ';' + ps)
-                        pelifile.write(txt + ps + ';' + ps + '\n')
-        print('Yht;' + str(lkm) + ';' + '{0:.1f}'.format(total))
-        pelifile.write('Yht;' + str(lkm) + ';' + '{0:.1f}'.format(total))
+                        txt = (
+                            f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
+                            f'{metadata.peli};{yhd["combination"].replace("-", "/")};'
+                            f'{kertaa*troikka["panos"]};{kertaa*troikka["panos"]}'
+                        )
+                        print(f'{txt}  =>  {kerroin}')
+                        pelifile.write(txt + '\n')
+        print(f'Yht;{lkm};{total:.1f}')
+        pelifile.write(f'Yht;{lkm};{total:.1f}')
     print('<<<<<>>>>>')
     tomatn = 0.0
     if omatn > 0.0001:
         tomatn = total / omatn
-    print('Oma todennäköisyys: ' + '{0:.1f}'.format(100*omatn) + ' % // ' + '{0:.1f}'.format(tomatn))
+    print(f'Oma todennäköisyys: {100*omatn:.1f} % // {tomatn:.1f}')
     print(f'Vaihto: {metadata.vaihto} / Jako: {metadata.jako}')
     try:
-        print('Min: ' + '{0:.1f}'.format(minlunde) + ' / Average: ' +
-              '{0:.1f}'.format(avelunde/omatn) +
-              ' / Max: ' + '{0:.1f}'.format(maxlunde))
+        print(
+            f'Min: {minlunde:.1f} / Average: {avelunde/omatn:.1f} / '
+            f'Max: {maxlunde:.1f}')
     except ZeroDivisionError:
         pass
     print('<<<<<>>>>>')
@@ -183,3 +184,98 @@ def troikka(args, prosentit, metadata, kertoimet):
 
 def t_peli(args, prosentit, metadata, kertoimet):
     pass
+"""
+
+    print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}')
+    t_peli = get_data.get_json(PELIT_FOLDER + args.pelimuoto + '.json')
+    l = int(lahto)
+    pros = Prosentit.pros(koodi)
+    p1 = pros[l - 1][:]
+    p2 = pros[l][:]
+    p3 = pros[l + 1][:]
+    p4 = pros[l + 2][:]
+
+    paraf = open('t4_para.txt')
+                    # 0 = min Kelly, 1 = panos, 2 = min lunastus
+    para = [float(x) for x in paraf.readline().split(',')]
+
+    for line in open('t4.txt'):
+        systeemi.append([int(x) for x in line.split(',')])
+
+    kerroinxml = Tkertoimet.bs(koodi, lahto, 't4')
+
+    data = kerroinxml.find('pool')
+    vaihto = float(data['net-sales'].replace(',','.'))
+    jako = float(data['net-pool'].replace(',','.'))
+    lyhenne = kerroinxml.card['code']
+    pvm = kerroinxml.card['date'][0:5]
+    peli = data['type']
+
+    rivit = {}
+    omatn = 0.0
+    lkm = 0
+    total = 0.0
+    minlunde = 100000.0
+    maxlunde = 0.0
+    avelunde = 0.0
+                                                # luetaan data dictionaryyn
+    for yhd in kerroinxml.find_all('probable'):
+        rivit[yhd['combination']] = {'pelattu': float(yhd['amount'].replace(',','.')), 'kerroin': 5 * float(yhd.string.replace(',', '.')), 'omakerr':0.0}
+
+    heppoja = []
+    heppoja = Check.Hepoja(koodi)   
+    
+    for l1 in range(1,heppoja[l-1][1]+1):
+        for l2 in range(1,heppoja[l][1]+1):
+            for l3 in range(1,heppoja[l+1][1]+1):
+                for l4 in range(1,heppoja[l+2][1]+1):
+                    yhd = [l1,l2,l3,l4]
+                    pyhd = p1[l1-1] * p2[l2-1]* p3[l3-1] * p4[l4-1]
+                    y = "-".join([unicode(x) for x in yhd])
+                    if yhdistelma.ok(yhd,systeemi) and pyhd > 0.000001:
+                        omakerr = 1 / pyhd
+                        if y in rivit.keys():
+                            if omakerr > rivit[y]['kerroin']:
+                                rivit.pop(y)                # poistetaan ylipelatut kelvolliset rivit
+                            else:
+                                rivit[y]['omakerr'] = omakerr
+                        elif omakerr < 5 * jako:            # pelaamattomat rivit
+                            rivit[y] = { 'pelattu': 0.0, 'kerroin' : 5 * jako, 'omakerr' : omakerr}
+                    elif y in rivit.keys():
+                        rivit.pop(y)                        # poistetaan kelpaamattomat rivit
+    
+    out = open('/home/kari/Python/Pelit/T4.peli', 'w')
+    for yhd in rivit:
+        kerroin = rivit[yhd]['kerroin']
+        omakerr = rivit[yhd]['omakerr']
+        kelly = (kerroin - omakerr) / (kerroin - 1) / omakerr
+        kert = int(kelly / para[0])
+        lunde = kert * para[1] * kerroin
+        if lunde > para[2]:
+            lkm += 1
+            omatn += 1 / omakerr
+            total += kert * para[1]
+            avelunde += lunde / omakerr
+            if lunde < minlunde:
+                minlunde = lunde
+            if lunde > maxlunde:
+                maxlunde = lunde
+            txt = lyhenne + ';' + pvm + ';' + lahto + ';' + peli + ';' + yhd.replace('-', '/') + ';'
+            ps = '{0:.1f}'.format(kert * para[1])
+            print txt + ps + ';' + ps
+            out.write(txt + ps + ';' + ps + '\n')
+
+    print 'Yht;' + str(lkm) + ';' + '{0:.1f}'.format(total)
+    out.write('Yht;' + str(lkm) + ';' + '{0:.1f}'.format(total))
+    print '<<<<<>>>>>'
+    tomatn = 0.0
+    if omatn > 0.0001:
+        tomatn = total / omatn
+    print 'Oma todennäköisyys: ' + '{0:.1f}'.format(100*omatn) + ' % // ' + '{0:.1f}'.format(tomatn)
+    print 'Vaihto: ' + '{0:.0f}'.format(vaihto) + ' / Jako: '+ '{0:.0f}'.format(jako)
+    print 'Min: ' + '{0:.1f}'.format(minlunde) + ' / Average: ' + '{0:.1f}'.format(avelunde / omatn) + ' / Max: ' + '{0:.1f}'.format(maxlunde)
+    print '<<<<<>>>>>'
+    out.flush()
+    out.close()
+    analyysi.Analyysi('/home/kari/Python/Pelit/T4.peli')
+"""
