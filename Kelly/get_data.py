@@ -191,7 +191,7 @@ def tarkista_prosentit(pros, filename):
         poissa = hepat[lahto]['poissa']
         for pois in poissa:
             if pros_lahto[pois - 1] > 0:
-                raise Exception('Lähtö {lahto}: Numero {pois} on poissa')
+                raise Exception(f'Lähtö {lahto}: Numero {pois} on poissa')
 
 
 def analyysi(pelifile):

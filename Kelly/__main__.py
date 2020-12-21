@@ -55,7 +55,7 @@ def kelly():
     parser_peli = subparser.add_parser('peli', help='Peli')
     parser_peli.add_argument('ratakoodi', help='Ratakoodi')
     parser_peli.add_argument('lahto', help='lahto')
-    parser_peli.add_argument('pelimuoto', help='Pelimuoti',
+    parser_peli.add_argument('pelimuoto', help='Pelimuoto',
                              choices=['voi', 'sij', 'kak', 'duo', 'tro', 't4',
                                       't5', 't6', 't7', 't8'])
     parser_peli.add_argument('-y', '--vain_ylin',
