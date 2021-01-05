@@ -59,12 +59,7 @@ def kaksari(args, prosentit, metadata, kertoimet):
 def duo(args, prosentit, metadata, kertoimet):
     print(f'Duo: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
     duo = get_data.get_json(PELIT_FOLDER + 'duo.json')
-
-    # lahto1 = args.lahto
-    # lahto2 = str(int(lahto1) + 1)
     pros = {}
-    # pros['1'] = [p/100 for p in prosentit[lahto1]]
-    # pros['2'] = [p/100 for p in prosentit[lahto2]]
     for i in range(2):
         lahto = str(int(args.lahto) + i)
         pros[str(i + 1)] = [p/100 for p in prosentit[lahto]]
@@ -80,7 +75,6 @@ def duo(args, prosentit, metadata, kertoimet):
         for yhd in kertoimet:
             yhdistelma = tuple([int(y) for y in yhd['combination'].split('-')])
             if yhdistelma in yhdistelmat:
-            # if get_data.yhdistelma_ok(yhdistelma, duo):
                 kerroin = float(yhd.string.replace(',', '.'))
                 if int(kerroin) == 0:
                     kerroin = metadata.jako  # max kerroin jos yhdistelmää ei pelattu
