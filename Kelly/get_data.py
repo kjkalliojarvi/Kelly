@@ -6,10 +6,13 @@ from zipfile import ZipFile
 from io import BytesIO
 from collections import namedtuple
 from itertools import product
+from math import prod
 from more_itertools import distinct_permutations
+import os
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
+PELIT_FOLDER = os.environ['PELIT_FOLDER']
 metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
 
 
@@ -74,6 +77,13 @@ def Tprosentit(koodi, lahto, peli):
     url = BASEURL + koodi + '_' + pvm + '_R' + lahto + '_' + peli + '_percs.xml'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'xml')
+    kerroindata = soup.find('pool')
+    data = metadata(
+        vaihto=float(kerroindata['net-sales'].replace(',', '.')),
+        jako=float(kerroindata['net-pool-major-only'].replace(',', '.')),
+        lyhenne=soup.card['code'],
+        pvm=soup.card['date'][0:5],
+        peli=kerroindata['type'])
     all_perc = {}
     for leg in soup.find_all('leg-percentages'):
         legno = leg['leg']
@@ -81,7 +91,7 @@ def Tprosentit(koodi, lahto, peli):
         for perc in leg.find_all('percentage'):
             pr.append(float(perc.string.replace(',', '.')))
         all_perc[legno] = pr
-    return all_perc
+    return data, all_perc
 
 
 def hepoja(koodi):
@@ -161,20 +171,19 @@ def troikka_yhdistelma_ok(yhdistelma, systeemi):
     return oukkidoukki
 
 
-def hajotus_rivit(systeemi, hajotus):
+def hajotus_rivit(systeemi):
     """
     In:
         systeemi:  T-pelin tiedot
-        hajotus:   lista hajotuksia
     Out:
         rivit:     hajotuksen mukaiset rivit systeemistä
     """
     rivit = []
-    for hajos in hajotus:
-        for permutation in distinct_permutations(hajos):
+    for hajotus in systeemi['hajotus']:
+        for permutation in distinct_permutations(hajotus):
             perm_yhd = []
             for lahto, kategoria in enumerate(permutation, 1):
-                perm_yhd.append(systeemi['L'][str(lahto)][kategoria])
+                perm_yhd.append(systeemi['L' + str(lahto)][kategoria])
             for rivi in product(*perm_yhd):
                 rivit.append(rivi)
     return rivit
@@ -194,76 +203,67 @@ def tarkista_prosentit(pros, filename):
                 raise Exception(f'Lähtö {lahto}: Numero {pois} on poissa')
 
 
-def analyysi(pelifile):
-    pelif = open(pelifile)
-    rivi = []
-    rivi0 = pelif.readline().split(';')
-    rivi = [int(x) for x in rivi0[4].split('/')]
-    panos = float(rivi0[5])
-    pelit = {'DUO': 2, 'TRO': 3, 'T4': 4, 'T5': 5, 'T6': 6, 'T65': 6,
-             'T7': 7, 'T75': 7}
-    lahtoja = pelit[rivi0[3]]
-    laskuri = [[0 for i in range(16)] for j in range(lahtoja)]
-    kokpanos = [[0.0 for i in range(16)] for j in range(lahtoja)]
-    riveja = 0
-    total = 0.0
-    while True:
-        for ll in range(lahtoja):
-            # print ll
-            laskuri[ll][rivi[ll]] += 1
-            kokpanos[ll][rivi[ll]] += panos
-        rivi0 = pelif.readline().split(';')
-        if rivi0[0] == 'Yht':
-            riveja = rivi0[1]
-            total = rivi0[2]
-            break
-        else:
-            rivi = [int(x) for x in rivi0[4].split('/')]
-            panos = float(rivi0[5])
-    print('Rastit' + str(riveja))
-    for i in range(16):
-        print('{0:3d} |'.format(i+1), end="")
+def yhdistelma_tn(yhdistelma, prosentit):
+    tn = []
+    for tlahto, numero in enumerate(yhdistelma, 1):
+        tn.append(prosentit[str(tlahto)][numero - 1])
+    return prod(tn)
+
+
+def analyysi(pelimuoto):
+    with open(PELIT_FOLDER + pelimuoto + '.peli', 'r') as pelifile:
+        pelit = {'duo': 2, 'troikka': 3, 't4': 4, 't5': 5, 't6': 6, 't7': 7, 't8': 8}
+        lahtoja = pelit[pelimuoto]
+        laskuri = {str(i): {str(i): 0 for i in range(1, 17)} for i in range(1, lahtoja + 1)}
+        kokpanos = {str(i): {str(i): 0 for i in range(1, 17)} for i in range(1, lahtoja + 1)}
+        while True:
+            raaka = pelifile.readline().split(';')
+            if raaka[0] == 'Yht':
+                riveja = raaka[1]
+                total = raaka[2]
+                break
+            rivi = raaka[4].split('/')
+            panos = float(raaka[5])
+            for lahto, numero in enumerate(rivi, 1):
+                laskuri[str(lahto)][numero] += 1
+                kokpanos[str(lahto)][numero] += panos
+
+    print('Rastit ' + str(riveja))
+    for i in range(1, 17):
+        print('{0:3d} |'.format(i), end="")
     print('')
-    for i in range(16):
-        print('=====', end="")
-    print('')
-    for ll in range(lahtoja):
-        for h in range(16):
-            print('{0:3d} |'.format(laskuri[ll][h]), end="")
+    print(80 * '=')
+    for ll in range(1, lahtoja + 1):
+        for h in range(1, 17):
+            print('{0:3.0f} |'.format(laskuri[str(ll)][str(h)]), end="")
         print('')
     print('Rastit ')
     a = 0
-    for i in range(16):
-        print('{0:3d} |'.format(i+1), end="")
+    for i in range(1, 17):
+        print('{0:3d} |'.format(i), end="")
     print('')
-    for i in range(16):
-        print('==== ', end="")
-    print('')
-    for ll in range(lahtoja):
+    print(80 * '=')
+    for ll in range(1, lahtoja + 1):
         a = 0
-        for h in range(16):
-            print('{0:3d} |'.format(laskuri[ll][h]), end="")
-            a += laskuri[ll][h]
-        print(a)
+        for h in range(1, 17):
+            print('{0:3.0f} |'.format(laskuri[str(ll)][str(h)]), end="")
+            a += laskuri[str(ll)][str(h)]
+        print(int(a))
     print('%-osuudet')
-    for i in range(16):
-        print('{0:3d} |'.format(i+1), end="")
+    for i in range(1, 17):
+        print('{0:3d} |'.format(i), end="")
     print('')
-    for i in range(16):
-        print('=====', end="")
-    print('')
-    for ll in range(lahtoja):
-        for h in range(16):
-            print('{0:3.0f} |'.format(100*float(laskuri[ll][h])/float(riveja)), end="")
+    print(80 * '=')
+    for ll in range(1, lahtoja + 1):
+        for h in range(1, 17):
+            print('{0:3.0f} |'.format(100*float(laskuri[str(ll)][str(h)])/float(riveja)), end="")
         print('')
     print('%-osuudet rahasta')
-    for i in range(16):
-        print('{0:3d} |'.format(i+1), end="")
+    for i in range(1, 17):
+        print('{0:3d} |'.format(i), end="")
     print('')
-    for i in range(16):
-        print('=====', end="")
-    print('')
-    for ll in range(lahtoja):
-        for h in range(16):
-            print('{0:3.0f} |'.format(100*float(kokpanos[ll][h])/float(total)), end="")
+    print(80 * '=')
+    for ll in range(1, lahtoja + 1):
+        for h in range(1, 17):
+            print('{0:3.0f} |'.format(100*float(kokpanos[str(ll)][str(h)])/float(total)), end="")
         print('')
