@@ -11,7 +11,12 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = [ 
+    'beautifulsoup4==4.9.3',
+    'more-itertools==8.6.0',
+    'requests==2.24.0',
+    'lxml==4.6.2'
+]
 
 setup_requirements = [ ]
 
