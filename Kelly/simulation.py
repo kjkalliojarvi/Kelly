@@ -49,7 +49,7 @@ def run_simulation(t_peli, simulation, pelipros):
     for i in range(t_peli['lahtoja']):
         lahto = 'L' + str(i + 1)
         prosentit = pelipros[str(i + 1)]
-        abcd = get_data.split_abcd(prosentit, simulation)
+        abcd = get_data.split_abcd(prosentit, simulation['rajat'])
         samples = np.random.choice(np.arange(1, len(prosentit) + 1),
                                    simulation['samples'], p=prosentit)
         sampleresults = []

@@ -158,13 +158,15 @@ def troikka(args, prosentit, metadata, kertoimet):
 
 def t_peli(args, prosentit, metadata, kertoimet):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    t_peli = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
-    pelimuoto = 't' + str(t_peli['lahtoja'])
+    t_conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    pelimuoto = 't' + str(t_conf['lahtoja'])
     pros = {}
-    for i in range(t_peli['lahtoja']):
+    for i in range(t_conf['lahtoja']):
         lahto = str(int(args.lahto) + i)
-        pros[str(i + 1)] = [p/100 for p in prosentit[lahto]]
-    rivit = get_data.hajotus_rivit(t_peli)
+        lahto_t_peli = str(i + 1)
+        pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
+        t_conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], t_conf['rajat'])
+    rivit = get_data.hajotus_rivit(t_conf)
 
     omatn = 0.0
     lkm = 0
@@ -182,22 +184,22 @@ def t_peli(args, prosentit, metadata, kertoimet):
         for yhd in kertoimet:
             yhdistelma = tuple([int(y) for y in yhd['combination'].split('-')])
             if yhdistelma in rivit:
-                kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / t_peli['panos']
+                kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / t_conf['panos']
                 if int(kerroin) == 0:
-                    kerroin = metadata.jako / t_peli['panos'] # max kerroin jos yhdistelmää ei pelattu
+                    kerroin = metadata.jako / t_conf['panos'] # max kerroin jos yhdistelmää ei pelattu
                 oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
 
                 if kerroin > oma_kerroin:
                     kelly = get_data.kelly(kerroin, oma_kerroin)
-                    if t_peli['moninkertaistus']:
-                        kertaa = int(kelly / t_peli['min_kelly'])
+                    if t_conf['moninkertaistus']:
+                        kertaa = int(kelly / t_conf['min_kelly'])
                     else:
-                        kertaa = 1 if kelly > t_peli['min_kelly'] else 0
-                    lunde = kertaa * t_peli['panos'] * kerroin
-                    if lunde > t_peli['min_lunastus']:
+                        kertaa = 1 if kelly > t_conf['min_kelly'] else 0
+                    lunde = kertaa * t_conf['panos'] * kerroin
+                    if lunde > t_conf['min_lunastus']:
                         lkm += 1
                         omatn += 1 / oma_kerroin
-                        total += kertaa * t_peli['panos']
+                        total += kertaa * t_conf['panos']
                         avelunde += lunde / oma_kerroin
                         if lunde < minlunde:
                             minlunde = lunde
@@ -206,7 +208,7 @@ def t_peli(args, prosentit, metadata, kertoimet):
                         txt = (
                             f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
                             f'{pelimuoto.upper()};{yhd["combination"].replace("-", "/")};'
-                            f'{kertaa*t_peli["panos"]:.2f};{kertaa*t_peli["panos"]:.2f}'
+                            f'{kertaa*t_conf["panos"]:.2f};{kertaa*t_conf["panos"]:.2f}'
                             )
                         print(f'{txt}  =>  {round(lunde)}')
                         pelifile.write(txt + '\n')
@@ -218,13 +220,15 @@ def t_peli(args, prosentit, metadata, kertoimet):
 
 def t_peli_pros(args, prosentit, metadata, peliprosentit):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}: PROSENTIT')
-    t_peli = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
-    pelimuoto = 't' + str(t_peli['lahtoja'])
+    t_conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    pelimuoto = 't' + str(t_conf['lahtoja'])
     pros = {}
-    for i in range(t_peli['lahtoja']):
+    for i in range(t_conf['lahtoja']):
         lahto = str(int(args.lahto) + i)
-        pros[str(i + 1)] = [p/100 for p in prosentit[lahto]]
-    rivit = get_data.hajotus_rivit(t_peli)
+        lahto_t_peli = str(i + 1)
+        pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
+        t_conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], t_conf['rajat'])
+    rivit = get_data.hajotus_rivit(t_conf)
 
     pelipros = {}
     for key in peliprosentit.keys():
@@ -245,15 +249,15 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
             oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
             if kerroin > oma_kerroin:
                 kelly = get_data.kelly(kerroin, oma_kerroin)
-                if t_peli['moninkertaistus']:
-                    kertaa = int(kelly / t_peli['min_kelly'])
+                if t_conf['moninkertaistus']:
+                    kertaa = int(kelly / t_conf['min_kelly'])
                 else:
-                    kertaa = 1 if kelly > t_peli['min_kelly'] else 0
-                lunde = kertaa * t_peli['panos'] * kerroin
-                if lunde > t_peli['min_lunastus']:
+                    kertaa = 1 if kelly > t_conf['min_kelly'] else 0
+                lunde = kertaa * t_conf['panos'] * kerroin
+                if lunde > t_conf['min_lunastus']:
                     lkm += 1
                     omatn += 1 / oma_kerroin
-                    total += kertaa * t_peli['panos']
+                    total += kertaa * t_conf['panos']
                     avelunde += lunde / oma_kerroin
                     if lunde < minlunde:
                         minlunde = lunde
@@ -265,7 +269,7 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
                     txt = (
                         f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
                         f'{pelimuoto.upper()};{yhd[:-1]};'
-                        f'{kertaa*t_peli["panos"]:.2f};{kertaa*t_peli["panos"]:.2f}'
+                        f'{kertaa*t_conf["panos"]:.2f};{kertaa*t_conf["panos"]:.2f}'
                         )
                     print(f'{txt}  =>  {kerroin}')
                     pelifile.write(txt + '\n')
