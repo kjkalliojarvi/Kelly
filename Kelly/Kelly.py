@@ -79,7 +79,7 @@ def duo(args, prosentit, metadata, kertoimet):
                 if int(kerroin) == 0:
                     kerroin = metadata.jako  # max kerroin jos yhdistelmää ei pelattu
                 oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-                
+
                 if kerroin > oma_kerroin:
                     kelly = get_data.kelly(kerroin, oma_kerroin)
                     kertaa = int(kelly / duo['min_kelly'])
@@ -186,7 +186,7 @@ def t_peli(args, prosentit, metadata, kertoimet):
                 if int(kerroin) == 0:
                     kerroin = metadata.jako / t_peli['panos'] # max kerroin jos yhdistelmää ei pelattu
                 oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-                
+
                 if kerroin > oma_kerroin:
                     kelly = get_data.kelly(kerroin, oma_kerroin)
                     if t_peli['moninkertaistus']:
@@ -208,13 +208,13 @@ def t_peli(args, prosentit, metadata, kertoimet):
                             f'{pelimuoto.upper()};{yhd["combination"].replace("-", "/")};'
                             f'{kertaa*t_peli["panos"]:.2f};{kertaa*t_peli["panos"]:.2f}'
                             )
-                        print(f'{txt}  =>  {kerroin}')
+                        print(f'{txt}  =>  {round(lunde)}')
                         pelifile.write(txt + '\n')
         print(f'Yht;{lkm};{total:.2f}')
         pelifile.write(f'Yht;{lkm};{total:.2f}')
     print('<<<<<>>>>>')
     footer(omatn, total, metadata, minlunde, avelunde, maxlunde)
-    
+
 
 def t_peli_pros(args, prosentit, metadata, peliprosentit):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}: PROSENTIT')
@@ -225,7 +225,7 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
         lahto = str(int(args.lahto) + i)
         pros[str(i + 1)] = [p/100 for p in prosentit[lahto]]
     rivit = get_data.hajotus_rivit(t_peli)
-    
+
     pelipros = {}
     for key in peliprosentit.keys():
         pelipros[key] = [p/100 for p in peliprosentit[key]]
@@ -237,14 +237,11 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
     maxlunde = 0.0
     avelunde = 0.0
     vain_ylin = 1
-    if args.pelimuoto in ['t65']:
-        vain_ylin = 2
-    if args.pelimuoto in ['t64', 't75', 't86']:
-        vain_ylin = 2.5
 
     with open(PELIT_FOLDER + pelimuoto + '.peli', 'w') as pelifile:
         for yhdistelma in rivit:
-            kerroin = vain_ylin * (metadata.jako / metadata.vaihto) / get_data.yhdistelma_tn(yhdistelma, pelipros)
+            # vain ylin voittoluokka
+            kerroin = (metadata.jako / metadata.vaihto) / get_data.yhdistelma_tn(yhdistelma, pelipros)
             oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
             if kerroin > oma_kerroin:
                 kelly = get_data.kelly(kerroin, oma_kerroin)
@@ -276,7 +273,7 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
         pelifile.write(f'Yht;{lkm};{total:.2f}')
     print('<<<<<>>>>>')
     footer(omatn, total, metadata, minlunde, avelunde, maxlunde)
-    
+
 
 
 def footer(omatn, total, metadata, minlunde, avelunde, maxlunde):

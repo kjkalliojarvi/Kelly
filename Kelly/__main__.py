@@ -6,6 +6,7 @@ import sys
 
 from . import get_data
 from .Kelly import voittaja, sija, kaksari, duo, troikka, t_peli, t_peli_pros
+from .simulation import t_peli_simu
 
 PACKAGE_NAME = 'kelly'
 PVM = datetime.datetime.now().strftime("%d%m%Y")
@@ -56,6 +57,14 @@ def analysoi(args):
     get_data.analyysi(args.pelimuoto_)
 
 
+def simu(args):
+    if args.pelimuoto in ['t4', 't5', 't64', 't65', 't75', 't86']:
+        metadata, peliprosentit = get_data.Tprosentit(args.ratakoodi,
+                                                      args.lahto,
+                                                      args.pelimuoto)
+        t_peli_simu(args, peliprosentit)
+
+
 def kelly():
     register_exit_handler(sigterm_exit)
 
@@ -84,6 +93,13 @@ def kelly():
     parser_analyysi.add_argument('pelimuoto_', help='Pelimuoto',
                                  choices=['duo', 'troikka', 't4', 't5', 't6', 't7', 't8'])
     parser_analyysi.set_defaults(func=analysoi)
+
+    parser_simu = subparser.add_parser('simu', help='T-peli simulaatio')
+    parser_simu.add_argument('ratakoodi', help='Ratakoodi')
+    parser_simu.add_argument('lahto', help='lahto')
+    parser_simu.add_argument('pelimuoto', help='Pelimuoto',
+                             choices=['t4', 't5', 't64', 't65', 't75', 't86'])
+    parser_simu.set_defaults(func=simu)
 
     args, _ = parser.parse_known_args()
     if not args.command:
