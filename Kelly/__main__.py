@@ -5,7 +5,7 @@ import signal
 import sys
 
 from . import get_data
-from .Kelly import voittaja, sija, kaksari, duo, troikka, t_peli, t_peli_pros
+from .kelly_calc import voittaja, sija, kaksari, duo, troikka, t_peli, t_peli_pros
 from .simulation import t_peli_simu
 
 PACKAGE_NAME = 'kelly'
