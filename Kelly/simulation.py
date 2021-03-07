@@ -1,6 +1,7 @@
 from . import get_data
 
 import os
+from collections import Counter
 import numpy as np
 import pandas as pd
 
@@ -38,9 +39,10 @@ def t_peli_simu(args, peliprosentit):
     tulos['minimi'] = minimi
     tulos['keskiarvo'] = keskiarvo
     tulos['maksimi'] = maksimi
-    # print(systeemi)
-
     print(tulos)
+    vali = '-' * 80
+    print(vali)
+    jakauma = abcd_jakauma(tulos)
 
 
 def run_simulation(t_peli, simulation, pelipros):
@@ -66,3 +68,26 @@ def run_simulation(t_peli, simulation, pelipros):
     for result in results:
         apu.append((''.join(sorted(result[0])), 0.65 * t_peli['panos'] / result[1]))
     return apu, systeemi
+
+
+def abcd_jakauma(tulos):
+    jakauma = {'A': {}, 'B': {}, 'C': {}, 'D': {}, 'X': {}}
+    for _, row in tulos.iterrows():
+        lahtoja = len(row['hajotus'])
+        abcd = Counter(row['hajotus'])
+        prob = row['todennäköisyys']
+        lkmA = abcd.get('A', 0)
+        jakauma['A'][str(lkmA)] = jakauma['A'].get(str(lkmA), 0) + prob
+        lkmB = abcd.get('B', 0)
+        jakauma['B'][str(lkmB)] = jakauma['B'].get(str(lkmB), 0) + prob
+        lkmC = abcd.get('C', 0)
+        jakauma['C'][str(lkmC)] = jakauma['C'].get(str(lkmC), 0) + prob
+        lkmD = abcd.get('D', 0)
+        jakauma['D'][str(lkmD)] = jakauma['D'].get(str(lkmD), 0) + prob
+        lkmX = abcd.get('X', 0)
+        jakauma['X'][str(lkmX)] = jakauma['X'].get(str(lkmX), 0) + prob
+    df = pd.DataFrame(jakauma)
+    df_transposed = df.T
+    cols = sorted(df_transposed.columns.tolist())
+    print(df_transposed[cols])
+    return jakauma
