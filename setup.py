@@ -15,7 +15,7 @@ requirements = [
     'beautifulsoup4==4.9.3',
     'more-itertools==8.6.0',
     'requests==2.24.0',
-    'lxml==4.6.2',
+    'lxml==4.6.3',
     'numpy==1.19.2'
 ]
 
