@@ -21,7 +21,7 @@ def get_json(filename):
     try:
         with open(filename, 'r') as rawfile:
             jsonfile = json.loads(rawfile.read())
-    except IOError:
+    except FileNotFoundError:
         print(f'Ei fileä {filename}')
         sys.exit(1)
     return jsonfile
