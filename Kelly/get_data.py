@@ -22,7 +22,7 @@ def get_json(filename):
         with open(filename, 'r') as rawfile:
             jsonfile = json.loads(rawfile.read())
     except FileNotFoundError:
-        print(f'Ei fileä {filename}')
+        print(f'Ei fileä: {filename}')
         sys.exit(1)
     return jsonfile
 
@@ -46,11 +46,19 @@ def kertoimet(koodi, lahto, peli, compressed=False):
     url = BASEURL + pelifile
     if compressed:  # T-pelit
         response = requests.get(url + '.zip')
-        with ZipFile(BytesIO(response.content)) as zipped_file:
-            kerroinxml = zipped_file.open(pelifile).read()
+        if response.content:
+            with ZipFile(BytesIO(response.content)) as zipped_file:
+                kerroinxml = zipped_file.open(pelifile).read()
+        else:
+            print(f'Ei kyseistä peliä: {pelifile}')
+            sys.exit(1)
     else:  # muut
         response = requests.get(url)
-        kerroinxml = response.content
+        if response.content:
+            kerroinxml = response.content
+        else:
+            print(f'Ei kyseistä peliä: {pelifile}')
+            sys.exit(1)
     soup = BeautifulSoup(kerroinxml, 'xml')
     kerroindata = soup.find('pool')
     data = metadata(
