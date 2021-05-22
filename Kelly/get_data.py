@@ -9,6 +9,7 @@ from itertools import product
 from math import prod
 from more_itertools import distinct_permutations
 import os
+import sys
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
@@ -17,8 +18,12 @@ metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
 
 
 def get_json(filename):
-    with open(filename, 'r') as rawfile:
-        jsonfile = json.loads(rawfile.read())
+    try:
+        with open(filename, 'r') as rawfile:
+            jsonfile = json.loads(rawfile.read())
+    except IOError:
+        print(f'Ei fileä {filename}')
+        sys.exit(1)
     return jsonfile
 
 
