@@ -58,19 +58,15 @@ def kaksari(args, prosentit, metadata, kertoimet):
 
 def duo(args, prosentit, metadata, kertoimet):
     print(f'Duo: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    duo = get_data.get_json(PELIT_FOLDER + 'duo.json')
+    config = get_data.get_json(PELIT_FOLDER + 'duo.json')
     pros = {}
     for i in range(2):
         lahto = str(int(args.lahto) + i)
         pros[str(i + 1)] = [p/100 for p in prosentit[lahto]]
-    yhdistelmat = list(product(duo['L1'], duo['L2']))
-    omatn = 0.0
-    lkm = 0
-    total = 0.0
-    minlunde = 100000.0
-    maxlunde = 0.0
-    avelunde = 0.0
-
+    yhdistelmat = list(product(config['L1'], config['L2']))
+    omat_tn = []
+    panokset = []
+    lunastukset = []
     with open(PELIT_FOLDER + 'duo.peli', 'w') as pelifile:
         for yhd in kertoimet:
             yhdistelma = tuple([int(y) for y in yhd['combination'].split('-')])
@@ -79,101 +75,65 @@ def duo(args, prosentit, metadata, kertoimet):
                 if int(kerroin) == 0:
                     kerroin = metadata.jako  # max kerroin jos yhdistelmää ei pelattu
                 oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-
-                if kerroin > oma_kerroin:
-                    kelly = get_data.kelly(kerroin, oma_kerroin)
-                    kertaa = int(kelly / duo['min_kelly'])
-                    lunde = kertaa * duo['panos'] * kerroin
-                    if lunde > duo['min_lunastus']:
-                        lkm += 1
-                        omatn += 1 / oma_kerroin
-                        total += kertaa * duo['panos']
-                        avelunde += lunde / oma_kerroin
-                        if lunde < minlunde:
-                            minlunde = lunde
-                        if lunde > maxlunde:
-                            maxlunde = lunde
-                        txt = (
-                            f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
-                            f'{metadata.peli};{yhd["combination"].replace("-", "/")};'
-                            f'{kertaa*duo["panos"]:.1f};{kertaa*duo["panos"]:.1f}'
-                            )
-                        print(f'{txt}  =>  {kerroin}')
-                        pelifile.write(txt + '\n')
-        print(f'Yht;{lkm};{total:.1f}')
-        pelifile.write(f'Yht;{lkm};{total:.1f}')
+                omatn, pelipanos, lunastus = write_to_file(pelifile, yhdistelma, kerroin, oma_kerroin,
+                                                           args, config, metadata)
+                if lunastus > 0:
+                    omat_tn.append(omatn)
+                    panokset.append(pelipanos)
+                    lunastukset.append(lunastus)
+        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
+        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
     print('<<<<<>>>>>')
-    footer(omatn, total, metadata, minlunde, avelunde, maxlunde)
+    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
+    footer(omatn, sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
 
 
 def troikka(args, prosentit, metadata, kertoimet):
     print(f'Troikka: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    troikka = get_data.get_json(PELIT_FOLDER + 'troikka.json')
+    config = get_data.get_json(PELIT_FOLDER + 'troikka.json')
     p1 = [p/100 for p in prosentit[args.lahto]]
     p2 = get_data.p_2(prosentit[args.lahto])
     p3 = get_data.p_3(prosentit[args.lahto])
-
-    omatn = 0.0
-    lkm = 0
-    total = 0.0
-    minlunde = 100000.0
-    maxlunde = 0.0
-    avelunde = 0.0
-
+    omat_tn = []
+    panokset = []
+    lunastukset = []
     with open(PELIT_FOLDER + 'troikka.peli', 'w') as pelifile:
         for yhd in kertoimet:
             y = [int(y) for y in yhd['combination'].split('-')]
-            if get_data.troikka_yhdistelma_ok(y, troikka):
+            if get_data.troikka_yhdistelma_ok(y, config):
                 kerroin = float(yhd.string.replace(',', '.'))
                 if int(kerroin) == 0:
                     kerroin = 2.0 * metadata.jako  # max kerroin jos yhdistelmää ei pelattu
                 oma_kerroin = 100000.0
                 if (p1[y[0] - 1] * p2[y[1] - 1] * p3[y[2] - 1]) > 0.000001:
                     oma_kerroin = ((1 - p2[y[0] - 1])*(1-p3[y[0] - 1]-p3[y[1] - 1])) / (p1[y[0] - 1]*p2[y[1] - 1]*p3[y[2] - 1])
-                if kerroin > oma_kerroin > 0:
-                    kelly = get_data.kelly(kerroin, oma_kerroin)
-                    kertaa = int(kelly / troikka['min_kelly'])
-                    lunde = kertaa * troikka['panos'] * kerroin
-                    if lunde > troikka['min_lunastus']:
-                        lkm += 1
-                        omatn += 1 / oma_kerroin
-                        total += kertaa * troikka['panos']
-                        avelunde += lunde / oma_kerroin
-                        if lunde < minlunde:
-                            minlunde = lunde
-                        if lunde > maxlunde:
-                            maxlunde = lunde
-                        txt = (
-                            f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
-                            f'{metadata.peli};{yhd["combination"].replace("-", "/")};'
-                            f'{kertaa*troikka["panos"]};{kertaa*troikka["panos"]}'
-                        )
-                        print(f'{txt}  =>  {kerroin}')
-                        pelifile.write(txt + '\n')
-        print(f'Yht;{lkm};{total:.1f}')
-        pelifile.write(f'Yht;{lkm};{total:.1f}')
+                omatn, pelipanos, lunastus = write_to_file(pelifile, y, kerroin, oma_kerroin,
+                                                           args, config, metadata)
+                if lunastus > 0:
+                    omat_tn.append(omatn)
+                    panokset.append(pelipanos)
+                    lunastukset.append(lunastus)
+        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
+        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
     print('<<<<<>>>>>')
-    footer(omatn, total, metadata, minlunde, avelunde, maxlunde)
+    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
+    footer(sum(omat_tn), sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
 
 
 def t_peli(args, prosentit, metadata, kertoimet):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    t_conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
-    pelimuoto = 't' + str(t_conf['lahtoja'])
+    config = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    pelimuoto = 't' + str(config['lahtoja'])
     pros = {}
-    for i in range(t_conf['lahtoja']):
+    for i in range(config['lahtoja']):
         lahto = str(int(args.lahto) + i)
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
-        t_conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], t_conf['rajat'])
-    rivit = get_data.hajotus_rivit(t_conf)
-
-    omatn = 0.0
-    lkm = 0
-    total = 0.0
-    minlunde = 100000.0
-    maxlunde = 0.0
-    avelunde = 0.0
+        config['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], config['rajat'])
+    rivit = get_data.hajotus_rivit(config)
+    omat_tn = []
+    panokset = []
+    lunastukset = []
     vain_ylin = 1
     if args.pelimuoto in ['t65']:
         vain_ylin = 2
@@ -184,62 +144,42 @@ def t_peli(args, prosentit, metadata, kertoimet):
         for yhd in kertoimet:
             yhdistelma = tuple([int(y) for y in yhd['combination'].split('-')])
             if yhdistelma in rivit:
-                kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / t_conf['panos']
+                kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / config['panos']
                 if int(kerroin) == 0:
-                    kerroin = metadata.jako / t_conf['panos'] # max kerroin jos yhdistelmää ei pelattu
+                    kerroin = metadata.jako / config['panos'] # max kerroin jos yhdistelmää ei pelattu
                 oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-
-                if kerroin > oma_kerroin:
-                    kelly = get_data.kelly(kerroin, oma_kerroin)
-                    if t_conf['moninkertaistus']:
-                        kertaa = int(kelly / t_conf['min_kelly'])
-                    else:
-                        kertaa = 1 if kelly > t_conf['min_kelly'] else 0
-                    lunde = kertaa * t_conf['panos'] * kerroin
-                    if lunde > t_conf['min_lunastus']:
-                        lkm += 1
-                        omatn += 1 / oma_kerroin
-                        total += kertaa * t_conf['panos']
-                        avelunde += lunde / oma_kerroin
-                        if lunde < minlunde:
-                            minlunde = lunde
-                        if lunde > maxlunde:
-                            maxlunde = lunde
-                        txt = (
-                            f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
-                            f'{pelimuoto.upper()};{yhd["combination"].replace("-", "/")};'
-                            f'{kertaa*t_conf["panos"]:.2f};{kertaa*t_conf["panos"]:.2f}'
-                            )
-                        print(f'{txt}  =>  {round(lunde)}')
-                        pelifile.write(txt + '\n')
-        print(f'Yht;{lkm};{total:.2f}')
-        pelifile.write(f'Yht;{lkm};{total:.2f}')
+                omatn, pelipanos, lunastus = write_to_file(pelifile, yhdistelma, kerroin, oma_kerroin,
+                                                           args, config, metadata)
+                if lunastus > 0:
+                    omat_tn.append(omatn)
+                    panokset.append(pelipanos)
+                    lunastukset.append(lunastus)
+        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
+        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
     print('<<<<<>>>>>')
-    footer(omatn, total, metadata, minlunde, avelunde, maxlunde)
+    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
+    footer(sum(omat_tn), sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
+
 
 
 def t_peli_pros(args, prosentit, metadata, peliprosentit):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}: PROSENTIT')
-    t_conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
-    pelimuoto = 't' + str(t_conf['lahtoja'])
+    config = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    pelimuoto = 't' + str(config['lahtoja'])
     pros = {}
-    for i in range(t_conf['lahtoja']):
+    for i in range(config['lahtoja']):
         lahto = str(int(args.lahto) + i)
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
-        t_conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], t_conf['rajat'])
-    rivit = get_data.hajotus_rivit(t_conf)
+        config['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], config['rajat'])
+    rivit = get_data.hajotus_rivit(config)
 
     pelipros = {}
     for key in peliprosentit.keys():
         pelipros[key] = [p/100 for p in peliprosentit[key]]
-
-    omatn = 0.0
-    lkm = 0
-    total = 0.0
-    minlunde = 100000.0
-    maxlunde = 0.0
-    avelunde = 0.0
+    omat_tn = []
+    panokset = []
+    lunastukset = []
     vain_ylin = 1
 
     with open(PELIT_FOLDER + pelimuoto + '.peli', 'w') as pelifile:
@@ -247,37 +187,42 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
             # vain ylin voittoluokka
             kerroin = (metadata.jako / metadata.vaihto) / get_data.yhdistelma_tn(yhdistelma, pelipros)
             oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-            if kerroin > oma_kerroin:
-                kelly = get_data.kelly(kerroin, oma_kerroin)
-                if t_conf['moninkertaistus']:
-                    kertaa = int(kelly / t_conf['min_kelly'])
-                else:
-                    kertaa = 1 if kelly > t_conf['min_kelly'] else 0
-                lunde = kertaa * t_conf['panos'] * kerroin
-                if lunde > t_conf['min_lunastus']:
-                    lkm += 1
-                    omatn += 1 / oma_kerroin
-                    total += kertaa * t_conf['panos']
-                    avelunde += lunde / oma_kerroin
-                    if lunde < minlunde:
-                        minlunde = lunde
-                    if lunde > maxlunde:
-                        maxlunde = lunde
-                    yhd = ''
-                    for numero in yhdistelma:
-                        yhd += str(numero) + '/'
-                    txt = (
-                        f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
-                        f'{pelimuoto.upper()};{yhd[:-1]};'
-                        f'{kertaa*t_conf["panos"]:.2f};{kertaa*t_conf["panos"]:.2f}'
-                        )
-                    print(f'{txt}  =>  {kerroin}')
-                    pelifile.write(txt + '\n')
-        print(f'Yht;{lkm};{total:.2f}')
-        pelifile.write(f'Yht;{lkm};{total:.2f}')
+            omatn, pelipanos, lunastus = write_to_file(pelifile, yhdistelma, kerroin, oma_kerroin,
+                                                           args, config, metadata)
+            if lunastus > 0:
+                omat_tn.append(omatn)
+                panokset.append(pelipanos)
+                lunastukset.append(lunastus)
+        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
+        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
     print('<<<<<>>>>>')
-    footer(omatn, total, metadata, minlunde, avelunde, maxlunde)
+    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
+    footer(sum(omat_tn), sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
 
+
+def write_to_file(pelifile, yhdistelma, kerroin, oma_kerroin, args, config, metadata):
+    omatn = 0
+    pelipanos = 0
+    lunastus = 0
+    if kerroin > oma_kerroin:
+        kelly = get_data.kelly(kerroin, oma_kerroin)
+        if config['moninkertaistus']:
+            kertaa = int(kelly / config['min_kelly'])
+        else:
+            kertaa = 1 if kelly > config['min_kelly'] else 0
+        lunastus = kertaa * config['panos'] * kerroin
+        if lunastus > config['min_lunastus']:
+            omatn = (1 / oma_kerroin)
+            pelipanos = kertaa * config['panos']
+            yhd = '/'.join(yhdistelma)
+            txt = (
+                f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
+                f'{metadata.peli};{yhd};'
+                f'{pelipanos};{pelipanos}'
+            )
+            print(f'{txt}  =>  {kerroin}')
+            pelifile.write(txt + '\n')
+    return omatn, pelipanos, lunastus
 
 
 def footer(omatn, total, metadata, minlunde, avelunde, maxlunde):

@@ -30,8 +30,8 @@ def tanaan(args):
 
 
 def peli(args):
-    prosentti_file = args.ratakoodi + '_' + PVM + '.json'
-    prosentit = get_data.prosentit(PROSENTIT_FOLDER + prosentti_file)
+    url = f'{PROSENTIT_FOLDER}{args.ratakoodi}_PVM.json'
+    prosentit = get_data.prosentit(url)
     if args.pelimuoto in ['voi', 'sij', 'kak', 'duo', 'tro']:
         kutsu = {'voi': voittaja, 'sij': sija, 'kak': kaksari,
                  'tro': troikka, 'duo': duo}

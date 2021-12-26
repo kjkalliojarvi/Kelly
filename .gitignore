@@ -103,3 +103,4 @@ ENV/
 
 .vscode/
 .travis.yml
+.idea/

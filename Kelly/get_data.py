@@ -42,8 +42,8 @@ def listat():
 def kertoimet(koodi, lahto, peli, compressed=False):
     koodi, lahto, peli = _validate_params(koodi, lahto, peli)
     pvm = datetime.datetime.now().strftime("%d%m%Y")
-    pelifile = koodi + '_' + pvm + '_R' + lahto + '_' + peli+'.xml'
-    url = BASEURL + pelifile
+    pelifile = f'{koodi}_{pvm}_R{lahto}_{peli}.xml'
+    url = f'{BASEURL}{pelifile}'
     if compressed:  # T-pelit
         response = requests.get(url + '.zip')
         if response.content:
@@ -128,7 +128,8 @@ def hepoja(koodi):
 
 
 def kelly(kerroin, oma_kerroin):
-    return (kerroin - oma_kerroin) / (kerroin - 1) / oma_kerroin
+    kellyp = (kerroin - oma_kerroin) / (kerroin - 1) / oma_kerroin if oma_kerroin > kerroin else 0
+    return kellyp
 
 
 def p_2(p):
