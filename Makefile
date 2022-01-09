@@ -1,5 +1,9 @@
 .PHONY: clean clean-test clean-pyc clean-build docs help
 .DEFAULT_GOAL := help
+PIPFLAGS ?= --disable-pip-version-check --no-cache-dir
+PYTHON_VERSION ?= python3.9
+
+DEPS = $(shell git ls-files)
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -28,6 +32,25 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+
+.PHONY: all
+all: .built
+
+.built: $(DEPS) .pipenv .pipdevenv
+	touch $@
+
+.pipenv: requirements.txt Makefile .venv/bin/activate
+	. .venv/bin/activate && [ ! -s $< ] || $(PYTHON_VERSION) -m pip install $(PIPFLAGS) -r $<
+
+.pipdevenv: requirements_dev.txt Makefile .venv/bin/activate
+	. .venv/bin/activate && [ ! -s $< ] || $(PYTHON_VERSION) -m pip install $(PIPFLAGS) -r $<
+
+.venv/bin/activate:
+	[ -f .venv/bin/activate ] || ($(PYTHON_VERSION) -m venv --prompt kelly .venv \
+		&& . .venv/bin/activate && pip install --upgrade --force-reinstall pip setuptools)
+
+.clean_venv:
+	rm -rf .venv
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 

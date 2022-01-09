@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -15,6 +16,14 @@ import sys
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
 PELIT_FOLDER = os.environ['PELIT_FOLDER']
 metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
+
+
+@dataclass
+class Bet:
+    yhdistelma: str
+    kerroin: float
+    oma_kerroin: float
+    pelipanos: float
 
 
 def get_json(filename):
@@ -128,8 +137,26 @@ def hepoja(koodi):
 
 
 def kelly(kerroin, oma_kerroin):
-    kellyp = (kerroin - oma_kerroin) / (kerroin - 1) / oma_kerroin if oma_kerroin > kerroin else 0
+    kellyp = (kerroin - oma_kerroin) / (kerroin - 1) / oma_kerroin if kerroin > oma_kerroin else 0
     return kellyp
+
+
+def bet_size(kerroin, oma_kerroin, yhd, config):
+    kellypr = kelly(kerroin, oma_kerroin)
+    if config['moninkertaistus']:
+        kertaa = int(kellypr / config['min_kelly'])
+    else:
+        kertaa = 1 if kellypr > config['min_kelly'] else 0
+    if kertaa * config['panos'] * kerroin < config['min_lunastus']:
+        bet = None
+    else:
+        bet = Bet(
+                yhdistelma=yhd.replace('-', '/'),
+                kerroin=kerroin,
+                oma_kerroin=oma_kerroin,
+                pelipanos=kertaa*config['panos']
+                )
+    return bet
 
 
 def p_2(p):

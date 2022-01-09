@@ -1,11 +1,13 @@
 import argparse
 import datetime
+import json
+from openpyxl import load_workbook
 import os
 import signal
 import sys
 
 from . import get_data
-from .kelly_calc import voittaja, sija, kaksari, duo, troikka, t_peli, t_peli_pros
+from .bet_calc import voittaja, sija, kaksari, duo, troikka, t_peli, t_peli_pros
 from .simulation import t_peli_simu
 
 PACKAGE_NAME = 'kelly'
@@ -30,7 +32,7 @@ def tanaan(args):
 
 
 def peli(args):
-    url = f'{PROSENTIT_FOLDER}{args.ratakoodi}_PVM.json'
+    url = f'{PROSENTIT_FOLDER}{args.ratakoodi}_{PVM}.json'
     prosentit = get_data.prosentit(url)
     if args.pelimuoto in ['voi', 'sij', 'kak', 'duo', 'tro']:
         kutsu = {'voi': voittaja, 'sij': sija, 'kak': kaksari,
@@ -63,6 +65,26 @@ def simu(args):
                                                       args.lahto,
                                                       args.pelimuoto)
         t_peli_simu(args, peliprosentit)
+
+
+def prosentit(args):
+    wb = load_workbook(f'{PROSENTIT_FOLDER}prosentit.xlsx', data_only=True)
+    pros = wb['Prosentit']
+    row = 2
+    columns = 'BCDEFGHIJKLMNOPQ'
+    prosentti = {}
+    while pros[f'R{row}'].value is not None:
+        p = []
+        key = str(row - 1)
+        if pros[f'R{row}'].value == 100:
+            for column in columns:
+                if pros[f'{column}{row}'].value is not None:
+                    p.append(pros[f'{column}{row}'].value)
+            prosentti[key] = p
+        row += 1
+    filename = f'{PROSENTIT_FOLDER}{args.ratakoodi}_{PVM}.json'
+    with open(filename, 'w') as jsonfile:
+        json.dump(prosentti, jsonfile)
 
 
 def kelly():
@@ -100,6 +122,10 @@ def kelly():
     parser_simu.add_argument('pelimuoto', help='Pelimuoto',
                              choices=['t4', 't5', 't64', 't65', 't75', 't86'])
     parser_simu.set_defaults(func=simu)
+
+    parser_prosentit = subparser.add_parser('prosentit', help='Lue prosentit')
+    parser_prosentit.add_argument('ratakoodi', help='Ratakoodi')
+    parser_prosentit.set_defaults(func=prosentit)
 
     args, _ = parser.parse_known_args()
     if not args.command:

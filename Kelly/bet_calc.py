@@ -1,6 +1,8 @@
-# -*- coding: utf-8 -*-
-import os
 from itertools import product
+import os
+
+from Kelly.kelly_calc import write_to_file
+
 from . import get_data
 
 PELIT_FOLDER = os.environ['PELIT_FOLDER']
@@ -64,28 +66,19 @@ def duo(args, prosentit, metadata, kertoimet):
         lahto = str(int(args.lahto) + i)
         pros[str(i + 1)] = [p/100 for p in prosentit[lahto]]
     yhdistelmat = list(product(config['L1'], config['L2']))
-    omat_tn = []
-    panokset = []
-    lunastukset = []
-    with open(PELIT_FOLDER + 'duo.peli', 'w') as pelifile:
-        for yhd in kertoimet:
-            yhdistelma = tuple([int(y) for y in yhd['combination'].split('-')])
-            if yhdistelma in yhdistelmat:
-                kerroin = float(yhd.string.replace(',', '.'))
-                if int(kerroin) == 0:
-                    kerroin = metadata.jako  # max kerroin jos yhdistelmää ei pelattu
-                oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-                omatn, pelipanos, lunastus = write_to_file(pelifile, yhdistelma, kerroin, oma_kerroin,
-                                                           args, config, metadata)
-                if lunastus > 0:
-                    omat_tn.append(omatn)
-                    panokset.append(pelipanos)
-                    lunastukset.append(lunastus)
-        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-    print('<<<<<>>>>>')
-    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
-    footer(omatn, sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
+    bets = []
+    for yhd in kertoimet:
+        y = tuple([int(y) for y in yhd['combination'].split('-')])
+        if y in yhdistelmat:
+            kerroin = float(yhd.string.replace(',', '.'))
+            if int(kerroin) == 0:
+                kerroin = metadata.jako  # max kerroin jos yhdistelmää ei pelattu
+            oma_kerroin = 1 / get_data.yhdistelma_tn(y, pros)
+            yhdistelma = yhd['combination'].replace('-', '/')
+            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+            if bet:
+                bets.append(bet)
+    write_to_file(bets, 'duo', args, metadata)
 
 
 def troikka(args, prosentit, metadata, kertoimet):
@@ -94,30 +87,21 @@ def troikka(args, prosentit, metadata, kertoimet):
     p1 = [p/100 for p in prosentit[args.lahto]]
     p2 = get_data.p_2(prosentit[args.lahto])
     p3 = get_data.p_3(prosentit[args.lahto])
-    omat_tn = []
-    panokset = []
-    lunastukset = []
-    with open(PELIT_FOLDER + 'troikka.peli', 'w') as pelifile:
-        for yhd in kertoimet:
-            y = [int(y) for y in yhd['combination'].split('-')]
-            if get_data.troikka_yhdistelma_ok(y, config):
-                kerroin = float(yhd.string.replace(',', '.'))
-                if int(kerroin) == 0:
-                    kerroin = 2.0 * metadata.jako  # max kerroin jos yhdistelmää ei pelattu
-                oma_kerroin = 100000.0
-                if (p1[y[0] - 1] * p2[y[1] - 1] * p3[y[2] - 1]) > 0.000001:
-                    oma_kerroin = ((1 - p2[y[0] - 1])*(1-p3[y[0] - 1]-p3[y[1] - 1])) / (p1[y[0] - 1]*p2[y[1] - 1]*p3[y[2] - 1])
-                omatn, pelipanos, lunastus = write_to_file(pelifile, y, kerroin, oma_kerroin,
-                                                           args, config, metadata)
-                if lunastus > 0:
-                    omat_tn.append(omatn)
-                    panokset.append(pelipanos)
-                    lunastukset.append(lunastus)
-        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-    print('<<<<<>>>>>')
-    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
-    footer(sum(omat_tn), sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
+    bets = []
+    for yhd in kertoimet:
+        y = [int(y) for y in yhd['combination'].split('-')]
+        if get_data.troikka_yhdistelma_ok(y, config):
+            kerroin = float(yhd.string.replace(',', '.'))
+            if int(kerroin) == 0:
+                kerroin = 2.0 * metadata.jako  # max kerroin jos yhdistelmää ei pelattu
+            oma_kerroin = 100000.0
+            if (p1[y[0] - 1] * p2[y[1] - 1] * p3[y[2] - 1]) > 0.000001:
+                oma_kerroin = ((1 - p2[y[0] - 1])*(1-p3[y[0] - 1]-p3[y[1] - 1])) / (p1[y[0] - 1]*p2[y[1] - 1]*p3[y[2] - 1])
+            yhdistelma = yhd['combination'].replace('-', '/')
+            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+            if bet:
+                bets.append(bet)
+    write_to_file(bets, 'troikka', args, metadata)
 
 
 def t_peli(args, prosentit, metadata, kertoimet):
@@ -130,36 +114,25 @@ def t_peli(args, prosentit, metadata, kertoimet):
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
         config['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], config['rajat'])
-    rivit = get_data.hajotus_rivit(config)
-    omat_tn = []
-    panokset = []
-    lunastukset = []
+    yhdistelmat = get_data.hajotus_rivit(config)
     vain_ylin = 1
     if args.pelimuoto in ['t65']:
         vain_ylin = 2
     if args.pelimuoto in ['t64', 't75', 't86']:
         vain_ylin = 2.5
-
-    with open(PELIT_FOLDER + pelimuoto + '.peli', 'w') as pelifile:
-        for yhd in kertoimet:
-            yhdistelma = tuple([int(y) for y in yhd['combination'].split('-')])
-            if yhdistelma in rivit:
-                kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / config['panos']
-                if int(kerroin) == 0:
-                    kerroin = metadata.jako / config['panos'] # max kerroin jos yhdistelmää ei pelattu
-                oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-                omatn, pelipanos, lunastus = write_to_file(pelifile, yhdistelma, kerroin, oma_kerroin,
-                                                           args, config, metadata)
-                if lunastus > 0:
-                    omat_tn.append(omatn)
-                    panokset.append(pelipanos)
-                    lunastukset.append(lunastus)
-        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-    print('<<<<<>>>>>')
-    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
-    footer(sum(omat_tn), sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
-
+    bets = []
+    for yhd in kertoimet:
+        y= tuple([int(y) for y in yhd['combination'].split('-')])
+        if y in yhdistelmat:
+            kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / config['panos']
+            if int(kerroin) == 0:
+                kerroin = metadata.jako / config['panos'] # max kerroin jos yhdistelmää ei pelattu
+            oma_kerroin = 1 / get_data.yhdistelma_tn(y, pros)
+            yhdistelma = yhd['combination'].replace('-', '/')
+            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+            if bet:
+                bets.append(bet)
+    write_to_file(bets, pelimuoto, args, metadata)
 
 
 def t_peli_pros(args, prosentit, metadata, peliprosentit):
@@ -172,32 +145,22 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
         config['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], config['rajat'])
-    rivit = get_data.hajotus_rivit(config)
+    yhdistelmat = get_data.hajotus_rivit(config)
 
     pelipros = {}
     for key in peliprosentit.keys():
         pelipros[key] = [p/100 for p in peliprosentit[key]]
-    omat_tn = []
-    panokset = []
-    lunastukset = []
     vain_ylin = 1
-
-    with open(PELIT_FOLDER + pelimuoto + '.peli', 'w') as pelifile:
-        for yhdistelma in rivit:
-            # vain ylin voittoluokka
-            kerroin = (metadata.jako / metadata.vaihto) / get_data.yhdistelma_tn(yhdistelma, pelipros)
-            oma_kerroin = 1 / get_data.yhdistelma_tn(yhdistelma, pros)
-            omatn, pelipanos, lunastus = write_to_file(pelifile, yhdistelma, kerroin, oma_kerroin,
-                                                           args, config, metadata)
-            if lunastus > 0:
-                omat_tn.append(omatn)
-                panokset.append(pelipanos)
-                lunastukset.append(lunastus)
-        print(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-        pelifile.write(f'Yht;{len(lunastukset)};{sum(panokset):.1f}')
-    print('<<<<<>>>>>')
-    avelunde = sum(lunastukset)/len(lunastukset) if len(lunastukset) > 0 else 0
-    footer(sum(omat_tn), sum(panokset), metadata, min(lunastukset), avelunde, max(lunastukset))
+    bets = []
+    for yhd in yhdistelmat:
+        # vain ylin voittoluokka
+        kerroin = (metadata.jako / metadata.vaihto) / get_data.yhdistelma_tn(yhd, pelipros)
+        oma_kerroin = 1 / get_data.yhdistelma_tn(yhd, pros)
+        yhdistelma = yhd['combination'].replace('-', '/')
+        bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+        if bet:
+            bets.append(bet)
+    write_to_file(bets, pelimuoto, args, metadata)
 
 
 def write_to_file(bets, peli, args, metadata):
@@ -215,13 +178,14 @@ def write_to_file(bets, peli, args, metadata):
                 f'{metadata.peli};{bet.yhdistelma};'
                 f'{bet.pelipanos};{bet.pelipanos}'
             )
-            print(f'{txt}  =>  {bet.kerroin}')
+            print(f'{txt}  =>  {bet.kerroin:.0f}')
             pelifile.write(txt + '\n')
         print(f'Yht;{len(bets)};{tot_panos:.1f}')
         pelifile.write(f'Yht;{len(bets)};{tot_panos:.1f}')
     print('<<<<<>>>>>')
-    avelunde = sum(lunastus)/len(lunastus) if len(lunastus) > 0 else 0
-    footer(omatn, tot_panos, metadata, min(lunastus), avelunde, max(lunastus))
+    if len(lunastus) > 0:
+        avelunde = sum(lunastus)/len(lunastus)
+        footer(omatn, tot_panos, metadata, min(lunastus), avelunde, max(lunastus))
 
 
 def footer(omatn, total, metadata, minlunde, avelunde, maxlunde):
@@ -232,7 +196,7 @@ def footer(omatn, total, metadata, minlunde, avelunde, maxlunde):
     print(f'Vaihto: {metadata.vaihto} / Jako: {metadata.jako}')
     try:
         print(
-            f'Min: {minlunde:.1f} / Average: {avelunde/omatn:.1f} / '
+            f'Min: {minlunde:.1f} / Average: {avelunde:.1f} / '
             f'Max: {maxlunde:.1f}'
             )
     except ZeroDivisionError:
