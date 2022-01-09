@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -15,15 +14,9 @@ import sys
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
 PELIT_FOLDER = os.environ['PELIT_FOLDER']
+PVM = datetime.datetime.now().strftime("%d%m%Y")
 metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
-
-
-@dataclass
-class Bet:
-    yhdistelma: str
-    kerroin: float
-    oma_kerroin: float
-    pelipanos: float
+Bet = namedtuple('Bet', ['yhdistelma', 'kerroin', 'oma_kerroin', 'pelipanos'])
 
 
 def get_json(filename):
@@ -50,14 +43,14 @@ def listat():
 
 def kertoimet(koodi, lahto, peli, compressed=False):
     koodi, lahto, peli = _validate_params(koodi, lahto, peli)
-    pvm = datetime.datetime.now().strftime("%d%m%Y")
-    pelifile = f'{koodi}_{pvm}_R{lahto}_{peli}.xml'
+    pelifile = f'{koodi}_{PVM}_R{lahto}_{peli}.xml'
     url = f'{BASEURL}{pelifile}'
     if compressed:  # T-pelit
         response = requests.get(url + '.zip')
         if response.content:
             with ZipFile(BytesIO(response.content)) as zipped_file:
-                kerroinxml = zipped_file.open(pelifile).read()
+                with zipped_file.open(pelifile) as unzipped_file:
+                    kerroinxml = unzipped_file.read()
         else:
             print(f'Ei kyseistä peliä: {pelifile}')
             sys.exit(1)
@@ -95,8 +88,7 @@ def _kerroin_gen(soup):
 
 def Tprosentit(koodi, lahto, peli):
     koodi, lahto, peli = _validate_params(koodi, lahto, peli)
-    pvm = datetime.datetime.now().strftime("%d%m%Y")
-    url = BASEURL + koodi + '_' + pvm + '_R' + lahto + '_' + peli + '_percs.xml'
+    url = f'{BASEURL}{koodi}_{PVM}_R{lahto}_{peli}_percs.xml'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'xml')
     kerroindata = soup.find('pool')
@@ -219,10 +211,10 @@ def hajotus_rivit(systeemi):
     Out:
         rivit:     hajotusten mukaiset rivit systeemistä
     """
-    total_rivit = []
+    total_rivit = set()
     for hajotus in systeemi['hajotus']:
         rivit = rivit_abcd(hajotus, systeemi)
-        total_rivit += rivit
+        total_rivit = set.union(total_rivit, rivit)
     return total_rivit
 
 
@@ -230,13 +222,13 @@ def rivit_abcd(abcd, systeemi):
     """
     Palauttaa rivit annetulle hajotukselle abcd
     """
-    rivit = []
+    rivit = set()
     for permutation in distinct_permutations(abcd):
         perm_yhd = []
         for lahto, kategoria in enumerate(permutation, 1):
             perm_yhd.append(systeemi['L' + str(lahto)][kategoria])
         for rivi in product(*perm_yhd):
-            rivit.append(rivi)
+            rivit.add(rivi)
     return rivit
 
 
