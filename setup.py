@@ -12,11 +12,13 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'beautifulsoup4==4.9.3',
-    'more-itertools==8.6.0',
-    'requests==2.24.0',
-    'lxml==4.6.5',
-    'numpy==1.19.2'
+    'beautifulsoup4==4.10.0',
+    'more-itertools==8.12.0',
+    'openpyxl==3.0.9',
+    'pandas==1.3.5',
+    'requests==2.27.1',
+    'lxml==4.7.1',
+    'numpy==1.22.0'
 ]
 
 setup_requirements = [ ]
@@ -47,7 +49,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/kjkalliojarvi/Kelly',
-    version='0.3.2',
+    version='0.4.0',
     zip_safe=False,
     entry_points={
         'console_scripts':[
