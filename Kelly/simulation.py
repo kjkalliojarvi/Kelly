@@ -1,11 +1,11 @@
 from . import get_data
 
-import os
+from decouple import config
 from collections import Counter
 import numpy as np
 import pandas as pd
 
-PELIT_FOLDER = os.environ['PELIT_FOLDER']
+PELIT_FOLDER = config['PELIT_FOLDER']
 
 
 def t_peli_simu(args, peliprosentit):
