@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import os
+from decouple import config
 from itertools import product
 from . import get_data
 
-PELIT_FOLDER = os.environ['PELIT_FOLDER']
+PELIT_FOLDER = config['PELIT_FOLDER']
 
 
 def voittaja(args, prosentit, metadata, kertoimet):

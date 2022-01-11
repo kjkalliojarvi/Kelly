@@ -1,11 +1,11 @@
+from decouple import config
 from itertools import product
-import os
 
 from Kelly.kelly_calc import write_to_file
 
 from . import get_data
 
-PELIT_FOLDER = os.environ['PELIT_FOLDER']
+PELIT_FOLDER = config['PELIT_FOLDER']
 
 
 def voittaja(args, prosentit, metadata, kertoimet):
