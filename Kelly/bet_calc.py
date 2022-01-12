@@ -90,7 +90,7 @@ def troikka(args, prosentit, metadata, kertoimet):
     bets = []
     for yhd in kertoimet:
         y = [int(y) for y in yhd['combination'].split('-')]
-        if get_data.troikka_yhdistelma_ok(y, config):
+        if get_data.troikka_yhdistelma_ok(y, conf):
             kerroin = float(yhd.string.replace(',', '.'))
             if int(kerroin) == 0:
                 kerroin = 2.0 * metadata.jako  # max kerroin jos yhdistelmää ei pelattu
@@ -114,7 +114,7 @@ def t_peli(args, prosentit, metadata, kertoimet):
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
         conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], conf['rajat'])
-    yhdistelmat = get_data.hajotus_rivit(config)
+    yhdistelmat = get_data.hajotus_rivit(conf)
     vain_ylin = 1
     if args.pelimuoto in ['t65']:
         vain_ylin = 2
@@ -129,7 +129,7 @@ def t_peli(args, prosentit, metadata, kertoimet):
                 kerroin = metadata.jako / conf['panos'] # max kerroin jos yhdistelmää ei pelattu
             oma_kerroin = 1 / get_data.yhdistelma_tn(y, pros)
             yhdistelma = yhd['combination'].replace('-', '/')
-            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, conf)
             if bet:
                 bets.append(bet)
     write_to_file(bets, pelimuoto, args, metadata)
@@ -145,7 +145,7 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
         conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], conf['rajat'])
-    yhdistelmat = get_data.hajotus_rivit(config)
+    yhdistelmat = get_data.hajotus_rivit(conf)
 
     pelipros = {}
     for key in peliprosentit.keys():
@@ -157,7 +157,7 @@ def t_peli_pros(args, prosentit, metadata, peliprosentit):
         kerroin = (metadata.jako / metadata.vaihto) / get_data.yhdistelma_tn(yhd, pelipros)
         oma_kerroin = 1 / get_data.yhdistelma_tn(yhd, pros)
         yhdistelma = yhd['combination'].replace('-', '/')
-        bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+        bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, conf)
         if bet:
             bets.append(bet)
     write_to_file(bets, pelimuoto, args, metadata)
