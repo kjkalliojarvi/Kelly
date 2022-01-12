@@ -14,7 +14,7 @@ import sys
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
-PELIT_FOLDER = config['PELIT_FOLDER']
+PELIT_FOLDER = config('PELIT_FOLDER')
 PVM = datetime.datetime.now().strftime("%d%m%Y")
 metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
 Bet = namedtuple('Bet', ['yhdistelma', 'kerroin', 'oma_kerroin', 'pelipanos'])
@@ -134,20 +134,20 @@ def kelly(kerroin, oma_kerroin):
     return kellyp
 
 
-def bet_size(kerroin, oma_kerroin, yhd, config):
+def bet_size(kerroin, oma_kerroin, yhd, conf):
     kellypr = kelly(kerroin, oma_kerroin)
-    if config['moninkertaistus']:
-        kertaa = int(kellypr / config['min_kelly'])
+    if conf['moninkertaistus']:
+        kertaa = int(kellypr / conf['min_kelly'])
     else:
-        kertaa = 1 if kellypr > config['min_kelly'] else 0
-    if kertaa * config['panos'] * kerroin < config['min_lunastus']:
+        kertaa = 1 if kellypr > conf['min_kelly'] else 0
+    if kertaa * conf['panos'] * kerroin < conf['min_lunastus']:
         bet = None
     else:
         bet = Bet(
                 yhdistelma=yhd.replace('-', '/'),
                 kerroin=kerroin,
                 oma_kerroin=oma_kerroin,
-                pelipanos=kertaa*config['panos']
+                pelipanos=kertaa*conf['panos']
                 )
     return bet
 

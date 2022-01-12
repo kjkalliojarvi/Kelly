@@ -5,7 +5,7 @@ from Kelly.kelly_calc import write_to_file
 
 from . import get_data
 
-PELIT_FOLDER = config['PELIT_FOLDER']
+PELIT_FOLDER = config('PELIT_FOLDER')
 
 
 def voittaja(args, prosentit, metadata, kertoimet):
@@ -60,12 +60,12 @@ def kaksari(args, prosentit, metadata, kertoimet):
 
 def duo(args, prosentit, metadata, kertoimet):
     print(f'Duo: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    config = get_data.get_json(PELIT_FOLDER + 'duo.json')
+    conf = get_data.get_json(PELIT_FOLDER + 'duo.json')
     pros = {}
     for i in range(2):
         lahto = str(int(args.lahto) + i)
         pros[str(i + 1)] = [p/100 for p in prosentit[lahto]]
-    yhdistelmat = list(product(config['L1'], config['L2']))
+    yhdistelmat = list(product(conf['L1'], conf['L2']))
     bets = []
     for yhd in kertoimet:
         y = tuple([int(y) for y in yhd['combination'].split('-')])
@@ -75,7 +75,7 @@ def duo(args, prosentit, metadata, kertoimet):
                 kerroin = metadata.jako  # max kerroin jos yhdistelmää ei pelattu
             oma_kerroin = 1 / get_data.yhdistelma_tn(y, pros)
             yhdistelma = yhd['combination'].replace('-', '/')
-            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, conf)
             if bet:
                 bets.append(bet)
     write_to_file(bets, 'duo', args, metadata)
@@ -83,7 +83,7 @@ def duo(args, prosentit, metadata, kertoimet):
 
 def troikka(args, prosentit, metadata, kertoimet):
     print(f'Troikka: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    config = get_data.get_json(PELIT_FOLDER + 'troikka.json')
+    conf = get_data.get_json(PELIT_FOLDER + 'troikka.json')
     p1 = [p/100 for p in prosentit[args.lahto]]
     p2 = get_data.p_2(prosentit[args.lahto])
     p3 = get_data.p_3(prosentit[args.lahto])
@@ -98,7 +98,7 @@ def troikka(args, prosentit, metadata, kertoimet):
             if (p1[y[0] - 1] * p2[y[1] - 1] * p3[y[2] - 1]) > 0.000001:
                 oma_kerroin = ((1 - p2[y[0] - 1])*(1-p3[y[0] - 1]-p3[y[1] - 1])) / (p1[y[0] - 1]*p2[y[1] - 1]*p3[y[2] - 1])
             yhdistelma = yhd['combination'].replace('-', '/')
-            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
+            bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, conf)
             if bet:
                 bets.append(bet)
     write_to_file(bets, 'troikka', args, metadata)
@@ -106,14 +106,14 @@ def troikka(args, prosentit, metadata, kertoimet):
 
 def t_peli(args, prosentit, metadata, kertoimet):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    config = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
-    pelimuoto = 't' + str(config['lahtoja'])
+    conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    pelimuoto = 't' + str(conf['lahtoja'])
     pros = {}
-    for i in range(config['lahtoja']):
+    for i in range(conf['lahtoja']):
         lahto = str(int(args.lahto) + i)
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
-        config['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], config['rajat'])
+        conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], conf['rajat'])
     yhdistelmat = get_data.hajotus_rivit(config)
     vain_ylin = 1
     if args.pelimuoto in ['t65']:
@@ -124,9 +124,9 @@ def t_peli(args, prosentit, metadata, kertoimet):
     for yhd in kertoimet:
         y= tuple([int(y) for y in yhd['combination'].split('-')])
         if y in yhdistelmat:
-            kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / config['panos']
+            kerroin = vain_ylin * float(yhd.string.replace(',', '.')) / conf['panos']
             if int(kerroin) == 0:
-                kerroin = metadata.jako / config['panos'] # max kerroin jos yhdistelmää ei pelattu
+                kerroin = metadata.jako / conf['panos'] # max kerroin jos yhdistelmää ei pelattu
             oma_kerroin = 1 / get_data.yhdistelma_tn(y, pros)
             yhdistelma = yhd['combination'].replace('-', '/')
             bet = get_data.bet_size(kerroin, oma_kerroin, yhdistelma, config)
@@ -137,14 +137,14 @@ def t_peli(args, prosentit, metadata, kertoimet):
 
 def t_peli_pros(args, prosentit, metadata, peliprosentit):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}: PROSENTIT')
-    config = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
-    pelimuoto = 't' + str(config['lahtoja'])
+    conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    pelimuoto = 't' + str(conf['lahtoja'])
     pros = {}
-    for i in range(config['lahtoja']):
+    for i in range(conf['lahtoja']):
         lahto = str(int(args.lahto) + i)
         lahto_t_peli = str(i + 1)
         pros[lahto_t_peli] = [p/100 for p in prosentit[lahto]]
-        config['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], config['rajat'])
+        conf['L' + lahto_t_peli] = get_data.split_abcd(pros[lahto_t_peli], conf['rajat'])
     yhdistelmat = get_data.hajotus_rivit(config)
 
     pelipros = {}

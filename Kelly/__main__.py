@@ -12,7 +12,7 @@ from .simulation import t_peli_simu
 
 PACKAGE_NAME = 'kelly'
 PVM = datetime.datetime.now().strftime("%d%m%Y")
-PROSENTIT_FOLDER = config['PROSENTIT_FOLDER']
+PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
 
 
 def register_exit_handler(func):
