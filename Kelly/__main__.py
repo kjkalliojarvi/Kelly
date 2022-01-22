@@ -1,18 +1,18 @@
 import argparse
 import datetime
 from decouple import config
-import json
-from openpyxl import load_workbook
 import signal
 import sys
 
-from . import get_data
-from .bet_calc import voittaja, sija, kaksari, duo, troikka, t_peli, t_peli_pros
-from .simulation import t_peli_simu
+from .analyysi import analysoi
+from .get_data import excel_prosentit
+from .bet_calc import peli
+from .simulation import simulation
+from .veikkaus import tanaan
 
 PACKAGE_NAME = 'kelly'
 PVM = datetime.datetime.now().strftime("%d%m%Y")
-PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
+
 
 
 def register_exit_handler(func):
@@ -21,70 +21,6 @@ def register_exit_handler(func):
 
 def sigterm_exit(_sig_func=None):
     sys.exit(0)
-
-
-def tanaan(args):
-    pvm = datetime.datetime.now().strftime('%d.%m.%Y')
-    for ravit in get_data.listat():
-        if ravit['date'] == pvm:
-            a = ravit.find('pool')['file'].split('_')
-            print(ravit['name'], ravit['code'], ravit['track-code'], a[0])
-
-
-def peli(args):
-    url = f'{PROSENTIT_FOLDER}{args.ratakoodi}_{PVM}.json'
-    prosentit = get_data.prosentit(url)
-    if args.pelimuoto in ['voi', 'sij', 'kak', 'duo', 'tro']:
-        kutsu = {'voi': voittaja, 'sij': sija, 'kak': kaksari,
-                 'tro': troikka, 'duo': duo}
-        metadata, kertoimet = get_data.kertoimet(args.ratakoodi,
-                                                 args.lahto,
-                                                 args.pelimuoto)
-        kutsu[args.pelimuoto](args, prosentit, metadata, kertoimet)
-    if args.pelimuoto in ['t4', 't5', 't64', 't65', 't75', 't86']:
-        if args.prosentit:
-            metadata, peliprosentit = get_data.Tprosentit(args.ratakoodi,
-                                                          args.lahto,
-                                                          args.pelimuoto)
-            t_peli_pros(args, prosentit, metadata, peliprosentit)
-        else:
-            metadata, kertoimet = get_data.kertoimet(args.ratakoodi,
-                                                     args.lahto,
-                                                     args.pelimuoto,
-                                                     compressed=True)
-            t_peli(args, prosentit, metadata, kertoimet)
-
-
-def analysoi(args):
-    get_data.analyysi(args.pelimuoto_)
-
-
-def simu(args):
-    if args.pelimuoto in ['t4', 't5', 't64', 't65', 't75', 't86']:
-        metadata, peliprosentit = get_data.Tprosentit(args.ratakoodi,
-                                                      args.lahto,
-                                                      args.pelimuoto)
-        t_peli_simu(args, peliprosentit)
-
-
-def prosentit(args):
-    wb = load_workbook(f'{PROSENTIT_FOLDER}prosentit.xlsx', data_only=True)
-    pros = wb['Prosentit']
-    row = 2
-    columns = 'BCDEFGHIJKLMNOPQ'
-    prosentti = {}
-    while pros[f'R{row}'].value is not None:
-        p = []
-        key = str(row - 1)
-        if pros[f'R{row}'].value == 100:
-            for column in columns:
-                if pros[f'{column}{row}'].value is not None:
-                    p.append(pros[f'{column}{row}'].value)
-            prosentti[key] = p
-        row += 1
-    filename = f'{PROSENTIT_FOLDER}{args.ratakoodi}_{PVM}.json'
-    with open(filename, 'w') as jsonfile:
-        json.dump(prosentti, jsonfile)
 
 
 def kelly():
@@ -121,11 +57,11 @@ def kelly():
     parser_simu.add_argument('lahto', help='lahto')
     parser_simu.add_argument('pelimuoto', help='Pelimuoto',
                              choices=['t4', 't5', 't64', 't65', 't75', 't86'])
-    parser_simu.set_defaults(func=simu)
+    parser_simu.set_defaults(func=simulation)
 
     parser_prosentit = subparser.add_parser('prosentit', help='Lue prosentit')
     parser_prosentit.add_argument('ratakoodi', help='Ratakoodi')
-    parser_prosentit.set_defaults(func=prosentit)
+    parser_prosentit.set_defaults(func=excel_prosentit)
 
     args, _ = parser.parse_known_args()
     if not args.command:
