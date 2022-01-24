@@ -18,7 +18,8 @@ requirements = [
     'pandas==1.3.5',
     'requests==2.27.1',
     'lxml==4.7.1',
-    'numpy==1.22.0'
+    'numpy==1.22.0',
+    'python-decouple==3.5'
 ]
 
 setup_requirements = [ ]
@@ -34,8 +35,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     description="Kelly betting",
     install_requires=requirements,
