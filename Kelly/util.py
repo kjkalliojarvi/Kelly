@@ -16,7 +16,7 @@ def write_to_file(bets, peli, args, metadata):
             lunastus.append(bet.pelipanos * bet.kerroin)
             txt = (
                 f'{metadata.lyhenne};{metadata.pvm};{args.lahto};'
-                f'{metadata.peli};{bet.yhdistelma};'
+                f'{peli.upper()};{bet.yhdistelma};'
                 f'{bet.pelipanos};{bet.pelipanos}'
             )
             print(f'{txt}  =>  {bet.kerroin:.0f}')

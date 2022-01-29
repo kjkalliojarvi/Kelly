@@ -134,7 +134,7 @@ def troikka(args, prosentit, metadata, kertoimet):
             bet = bet_size(kerroin, oma_kerroin, yhdistelma, conf)
             if bet:
                 bets.append(bet)
-    write_to_file(bets, 'troikka', args, metadata)
+    write_to_file(bets, 'tro', args, metadata)
 
 
 def t_peli(args, prosentit, metadata, kertoimet):
