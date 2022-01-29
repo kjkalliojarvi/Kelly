@@ -4,10 +4,10 @@ from decouple import config
 PELIT_FOLDER = config('PELIT_FOLDER')
 
 
-def analysoi(pelimuoto):
-    with open(PELIT_FOLDER + pelimuoto + '.peli', 'r') as pelifile:
+def analysoi(args):
+    with open(PELIT_FOLDER + args.pelimuoto_ + '.peli', 'r') as pelifile:
         pelit = {'duo': 2, 'troikka': 3, 't4': 4, 't5': 5, 't6': 6, 't7': 7, 't8': 8}
-        lahtoja = pelit[pelimuoto]
+        lahtoja = pelit[args.pelimuoto_]
         laskuri = {str(i): {str(i): 0 for i in range(1, 17)} for i in range(1, lahtoja + 1)}
         kokpanos = {str(i): {str(i): 0 for i in range(1, 17)} for i in range(1, lahtoja + 1)}
         while True:
