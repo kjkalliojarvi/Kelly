@@ -52,11 +52,10 @@ def hepoja(koodi):
         if ravit['date'] == pvm and ravit['track-code'] == koodi:
             for lahto in ravit.find_all('race'):
                 data = {'hevosia': int(lahto.runners.string)}
-                poissa = []
                 if lahto.runners.has_attr('scratched'):
-                    a = lahto.runners['scratched'].split(',')
-                    for i in range(len(a)):
-                        poissa.append(int(a[i]))
+                    poissa = [pois for pois in lahto.runners['scratched'].split(',')]
+                else:
+                    poissa = []
                 data['poissa'] = poissa
                 hepot[lahto['number']] = data
     return hepot
