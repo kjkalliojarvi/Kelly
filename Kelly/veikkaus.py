@@ -57,7 +57,7 @@ def hae_kertoimet(koodi, lahto, peli, compressed=False):
         lyhenne=soup.card['code'],
         pvm=soup.card['date'][0:5],
         peli=kerroindata['type'])
-    kerroin_gen = _kerroin_gen(soup)
+    kerroin_gen = (kerroin for kerroin in soup.find_all('probable'))
     return data, kerroin_gen
 
 
@@ -81,11 +81,6 @@ def Tprosentit(koodi, lahto, peli):
             pr.append(float(perc.string.replace(',', '.')))
         all_perc[legno] = pr
     return data, all_perc
-
-
-def _kerroin_gen(soup):
-    for kerroin in soup.find_all('probable'):
-        yield kerroin
 
 
 def validate_params(koodi, lahto, peli):
