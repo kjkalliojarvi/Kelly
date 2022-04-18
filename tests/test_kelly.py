@@ -1,22 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+import pytest
 
-"""Tests for `kelly` package."""
-
-
-import unittest
-
-from kelly import kelly
+import Kelly
 
 
-class TestKelly(unittest.TestCase):
-    """Tests for `kelly` package."""
-
-    def setUp(self):
-        """Set up test fixtures, if any."""
-
-    def tearDown(self):
-        """Tear down test fixtures, if any."""
-
-    def test_000_something(self):
-        """Test something."""
+class TestMethods:
+    def test_get_prosentit(self):
+        prosentit = [6, 4, 1, 40, 16, 8, 1, 12, 4, 6, 2]
