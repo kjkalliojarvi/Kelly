@@ -230,7 +230,7 @@ def p_2(p):
               17.0, 16.9, 16.75, 16.6, 16.2, 15.8, 15.5, 15.3, 15.15, 14.9,
               14.5, 14.0, 13.55, 13.0, 12.6, 12.0, 11.4, 10.8, 10.2, 9.6,
               9.0, 8.5, 8.0, 7.5, 7.0, 6.5, 6.0, 5.5, 5.0, 4.5, 4.0]
-    p2 = [kaksip[i] for i in p] + [0.0 for i in range(16 - len(p))]
+    p2 = [kaksip[i] for i in p]
     return {ind: prob/sum(p2) for ind, prob in enumerate(p2, 1)}
 
 
@@ -243,7 +243,7 @@ def p_3(p):
               8.6, 8.4, 8.25, 8.1, 8.0, 7.9, 7.8, 7.7, 7.55, 7.4,
               7.2, 7.0, 6.95, 6.8, 6.7, 6.6, 6.5, 6.4, 6.3, 6.2,
               6.1, 5.9, 5.7, 5.5, 5.3, 5.1, 4.9, 4.7, 4.5, 4.3, 4.1]
-    p3 = [kolmep[i] for i in p] + [0.0 for i in range(16 - len(p))]
+    p3 = [kolmep[i] for i in p]
     return {ind: prob/sum(p3) for ind, prob in enumerate(p3, 1)}
 
 
