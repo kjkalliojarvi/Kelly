@@ -4,7 +4,7 @@ from decouple import config
 from itertools import product
 from math import prod
 
-from . import get_data
+from .get_data import get_json, get_prosentit, p_1, p_2, p_3
 from . import hajota
 from .validoi import troikka_yhdistelma_ok
 from .veikkaus import hae_kertoimet, Tprosentit
@@ -19,7 +19,7 @@ Bet = namedtuple('Bet', ['yhdistelma', 'kerroin', 'oma_kerroin', 'pelipanos'])
 
 def peli(args):
     filename = f'{PROSENTIT_FOLDER}{args.ratakoodi}_{PVM}.json'
-    prosentit = get_data.prosentit(filename)
+    prosentit = get_prosentit(filename)
     if args.pelimuoto in ['voi', 'sij', 'kak', 'duo', 'tro']:
         kutsu = {'voi': voittaja, 'sij': sija, 'kak': kaksari,
                  'tro': troikka, 'duo': duo}
@@ -93,7 +93,7 @@ def kaksari(args, prosentit, metadata, kertoimet):
 
 def duo(args, prosentit, metadata, kertoimet):
     print(f'Duo: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    conf = get_data.get_json(PELIT_FOLDER + 'duo.json')
+    conf = get_json(PELIT_FOLDER + 'duo.json')
     pros = {}
     for i in [0, 1]:
         lahto = str(int(args.lahto) + i)
@@ -116,7 +116,7 @@ def duo(args, prosentit, metadata, kertoimet):
 
 def troikka(args, prosentit, metadata, kertoimet):
     print(f'Troikka: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    conf = get_data.get_json(PELIT_FOLDER + 'troikka.json')
+    conf = get_json(PELIT_FOLDER + 'troikka.json')
     p1 = p_1(prosentit[args.lahto])
     p2 = p_2(prosentit[args.lahto])
     p3 = p_3(prosentit[args.lahto])
@@ -139,7 +139,7 @@ def troikka(args, prosentit, metadata, kertoimet):
 
 def t_peli(args, prosentit, metadata, kertoimet):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}')
-    conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    conf = get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
     pelimuoto = 't' + str(conf['lahtoja'])
     pros = {}
     for i in range(conf['lahtoja']):
@@ -170,7 +170,7 @@ def t_peli(args, prosentit, metadata, kertoimet):
 
 def t_peli_pros(args, prosentit, metadata, peliprosentit):
     print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}: PROSENTIT')
-    conf = get_data.get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
+    conf = get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
     pelimuoto = 't' + str(conf['lahtoja'])
     pros = {}
     for i in range(conf['lahtoja']):
@@ -215,36 +215,6 @@ def bet_size(kerroin, oma_kerroin, yhd, conf):
                 pelipanos=kertaa*conf['panos']
                 )
     return bet
-
-
-def p_1(p):
-    return {ind: prob/100 for ind, prob in enumerate(p, 1)}
-
-
-def p_2(p):
-    kaksip = [0.0, 2.0, 4.2, 6.2, 8.0, 8.7, 9.6, 10.1, 11.2, 12.1,
-              12.8, 13.7, 14.4, 15.0, 15.6, 16.0, 16.4, 16.7, 17.2, 17.7,
-              18.0, 18.4, 18.55, 18.85, 19.0, 19.35, 19.35, 19.5, 19.3, 19.2,
-              19.1, 19.0, 19.0, 19.0, 18.95, 18.9, 18.8, 18.7, 18.6, 18.6,
-              18.5, 18.4, 18.3, 18.2, 18.1, 18.0, 17.85, 17.75, 17.5, 17.3,
-              17.0, 16.9, 16.75, 16.6, 16.2, 15.8, 15.5, 15.3, 15.15, 14.9,
-              14.5, 14.0, 13.55, 13.0, 12.6, 12.0, 11.4, 10.8, 10.2, 9.6,
-              9.0, 8.5, 8.0, 7.5, 7.0, 6.5, 6.0, 5.5, 5.0, 4.5, 4.0]
-    p2 = [kaksip[i] for i in p]
-    return {ind: prob/sum(p2) for ind, prob in enumerate(p2, 1)}
-
-
-def p_3(p):
-    kolmep = [0.0, 4.0, 6.5, 8.6, 9.5, 10.7, 11.2, 11.6, 12.0, 12.3,
-              12.5, 12.8, 13.0, 13.2, 13.3, 13.3, 13.2, 13.1, 13.0, 12.9,
-              12.8, 12.7, 12.65, 12.55, 12.5, 12.35, 12.25, 12.2, 12.1, 12.0,
-              11.9, 11.8, 11.7, 11.6, 11.55, 11.5, 11.3, 11.1, 11.0, 10.9,
-              10.8, 10.6, 10.3, 10.0, 9.8, 9.6, 9.45, 9.25, 9.0, 8.8,
-              8.6, 8.4, 8.25, 8.1, 8.0, 7.9, 7.8, 7.7, 7.55, 7.4,
-              7.2, 7.0, 6.95, 6.8, 6.7, 6.6, 6.5, 6.4, 6.3, 6.2,
-              6.1, 5.9, 5.7, 5.5, 5.3, 5.1, 4.9, 4.7, 4.5, 4.3, 4.1]
-    p3 = [kolmep[i] for i in p]
-    return {ind: prob/sum(p3) for ind, prob in enumerate(p3, 1)}
 
 
 def yhdistelma_tn(yhdistelma, prosentit):
