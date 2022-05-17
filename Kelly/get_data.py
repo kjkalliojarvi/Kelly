@@ -1,15 +1,19 @@
 import json
+import string
 from decouple import config
 import datetime
 from collections import namedtuple
+from dataclasses import dataclass, field
 import sys
+from math import prod
 from openpyxl import load_workbook
 
-from .validoi import tarkista_prosentit
+from .validoi import tarkista_prosentit, troikka_yhdistelma_ok
 
 
 PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
 PVM = datetime.datetime.now().strftime("%d%m%Y")
+Bet = namedtuple('Bet', ['yhdistelma', 'kerroin', 'oma_kerroin', 'pelipanos'])
 
 
 def get_json(filename):
@@ -58,6 +62,26 @@ def p_3(p):
     return {ind: prob/sum(p3) for ind, prob in enumerate(p3, 1)}
 
 
+def multi_prosentit(lahto, lahtoja, prosentit):
+    p = {}
+    for i in range(lahtoja):
+        l = f'{int(lahto)+i}'
+        p[l] = p_1(prosentit[l])
+    return p
+
+
+def yhdistelma_tn(lahto, yhdistelma, prosentit):
+    tn = []
+    for tlahto, numero in enumerate(yhdistelma, int(lahto)):
+        tn.append(prosentit[str(tlahto)][numero])
+    return prod(tn)
+
+
+def kelly_calc(kerroin, oma_kerroin):
+    kellyp = (kerroin - oma_kerroin) / (kerroin - 1) / oma_kerroin if kerroin > oma_kerroin else 0
+    return kellyp
+
+
 def excel_prosentit(args):
     wb = load_workbook(f'{PROSENTIT_FOLDER}prosentit.xlsx', data_only=True)
     pros = wb['Prosentit']
@@ -76,3 +100,83 @@ def excel_prosentit(args):
     filename = f'{PROSENTIT_FOLDER}{args.ratakoodi}_{PVM}.json'
     with open(filename, 'w') as jsonfile:
         json.dump(prosentti, jsonfile)
+
+
+@dataclass
+class Peli:
+    lahto: str
+    prosentit: dict
+    conf: dict = None
+    p1: dict = field(init=False)
+    p2: dict = field(init=False)
+    p3: dict = field(init=False)
+
+    def __post_init__(self):
+        self.p1 = p_1(self.prosentit[self.lahto])
+        self.p2 = p_2(self.prosentit[self.lahto])
+        self.p3 = p_3(self.prosentit[self.lahto])
+
+    def oma_kerroin(self, peli):
+        pass
+
+    def kelly(self, peli, kerroin):
+        okelly = 0
+        oma_kerr = self.oma_kerroin(peli)
+        if oma_kerr:
+            okelly = kelly_calc(kerroin, oma_kerr)
+        return okelly, oma_kerr
+
+    def bet_size(self, peli, kerroin):
+        kellypr, oma_kerroin = self.kelly(peli, kerroin)
+        if self.conf['moninkertaistus']:
+            kertaa = int(kellypr / self.conf['min_kelly'])
+        else:
+            kertaa = 1 if kellypr > self.conf['min_kelly'] else 0
+        if kertaa * self.conf['panos'] * kerroin < self.conf['min_lunastus']:
+            bet = None
+        else:
+            bet = Bet(
+                    yhdistelma='/'.join([str(y) for y in peli]),
+                    kerroin=kerroin,
+                    oma_kerroin=oma_kerroin,
+                    pelipanos=kertaa*self.conf['panos']
+                    )
+        return bet
+
+
+@dataclass
+class Voittaja(Peli):
+    def oma_kerroin(self, peli):
+        return 1 / self.p1[peli] if self.p1[peli] else None
+
+
+@dataclass
+class Sija(Peli):
+    def oma_kerroin(self, peli):
+        sijap = self.p1[peli] + self.p2[peli] + self.p3[peli]
+        return 1 / sijap if sijap else None
+
+
+@dataclass
+class Kaksari(Peli):
+    def oma_kerroin(self, peli):
+        y = peli
+        return 1 / (self.p1[y[0]]*self.p2[y[1]]/(1-self.p2[y[0]]) + self.p1[y[1]]*self.p2[y[0]]/(1-self.p2[y[1]])) if (self.p1[y[0]]*self.p2[y[1]]) else None
+
+
+@dataclass
+class Troikka(Peli):
+    def oma_kerroin(self, peli):
+        y = peli
+        return ((1 - self.p2[y[0]])*(1-self.p3[y[0]]-self.p3[y[1]])) / (self.p1[y[0]]*self.p2[y[1]]*self.p3[y[2]]) if (self.p1[y[0]]*self.p2[y[1]]*self.p3[y[2]]) else None
+
+
+@dataclass
+class TPeli(Peli):
+    p: dict = field(init=False)
+
+    def __post_init__(self):
+        self.p = multi_prosentit(self.lahto, self.conf['lahtoja'], self.prosentit)
+
+    def oma_kerroin(self, peli):
+        return 1 / yhdistelma_tn(self.lahto, peli, self.p)

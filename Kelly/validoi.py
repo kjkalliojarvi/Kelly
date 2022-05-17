@@ -36,7 +36,7 @@ def tarkista_prosentit(pros, filename):
         summa = sum(pros_lahto)
         if summa != 100:
             raise Exception(f'Lähtö {lahto}: prosenttien summa {summa}')
-        poissa = hepat[lahto]['poissa']
+        poissa = [int(pois) for pois in hepat[lahto]['poissa']]
         for pois in poissa:
             if pros_lahto[pois - 1] > 0:
                 raise Exception(f'Lähtö {lahto}: Numero {pois} on poissa')
