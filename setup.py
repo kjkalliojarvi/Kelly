@@ -17,7 +17,7 @@ requirements = [
     'openpyxl==3.0.9',
     'pandas==1.3.5',
     'requests==2.27.1',
-    'lxml==4.7.1',
+    'lxml==4.9.1',
     'numpy==1.22.0',
     'python-decouple==3.5'
 ]
