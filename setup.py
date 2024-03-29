@@ -12,14 +12,14 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'beautifulsoup4==4.10.0',
-    'more-itertools==8.12.0',
-    'openpyxl==3.0.9',
-    'pandas==1.3.5',
+    'beautifulsoup4==4.12.3',
+    'more-itertools==10.2.0',
+    'openpyxl==3.1.2',
+    'pandas==2.2.1',
     'requests==2.31.0',
-    'lxml==4.9.1',
-    'numpy==1.22.0',
-    'python-decouple==3.5'
+    'lxml==5.1.1',
+    'numpy==1.26.4',
+    'python-decouple==3.8'
 ]
 
 setup_requirements = [ ]
@@ -35,8 +35,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
     description="Kelly betting",
     install_requires=requirements,
