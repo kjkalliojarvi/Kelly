@@ -16,7 +16,7 @@ requirements = [
     'more-itertools==10.2.0',
     'openpyxl==3.1.2',
     'pandas==2.2.1',
-    'requests==2.31.0',
+    'requests==2.32.0',
     'lxml==5.1.1',
     'numpy==1.26.4',
     'python-decouple==3.8'
