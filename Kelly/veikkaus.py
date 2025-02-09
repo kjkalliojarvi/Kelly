@@ -12,7 +12,7 @@ BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
 PELIT_FOLDER = config('PELIT_FOLDER')
 PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
 metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
-PVM = datetime.datetime.now().strftime("%d%m%Y")
+V_PVM = datetime.datetime.now().strftime("%d%m%Y")
 
 
 def tanaan(args):
@@ -31,7 +31,7 @@ def listat():
 
 def hae_kertoimet(koodi, lahto, peli, compressed=False):
     koodi, lahto, peli = validate_params(koodi, lahto, peli)
-    pelifile = f'{koodi}_{PVM}_R{lahto}_{peli}.xml'
+    pelifile = f'{koodi}_{V_PVM}_R{lahto}_{peli}.xml'
     url = f'{BASEURL}{pelifile}'
     if compressed:  # T-pelit
         response = requests.get(url + '.zip')
@@ -63,7 +63,7 @@ def hae_kertoimet(koodi, lahto, peli, compressed=False):
 
 def Tprosentit(koodi, lahto, peli):
     koodi, lahto, peli = validate_params(koodi, lahto, peli)
-    url = f'{BASEURL}{koodi}_{PVM}_R{lahto}_{peli}_percs.xml'
+    url = f'{BASEURL}{koodi}_{V_PVM}_R{lahto}_{peli}_percs.xml'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'xml')
     kerroindata = soup.find('pool')
