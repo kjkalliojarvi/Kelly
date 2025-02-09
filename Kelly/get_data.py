@@ -12,7 +12,7 @@ from .validoi import tarkista_prosentit, troikka_yhdistelma_ok
 
 
 PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
-PVM = datetime.datetime.now().strftime("%d%m%Y")
+PVM = datetime.datetime.now().strftime("%y%m%d")
 Bet = namedtuple('Bet', ['yhdistelma', 'kerroin', 'oma_kerroin', 'pelipanos'])
 
 
