@@ -11,7 +11,7 @@ from .util import write_to_file
 
 PELIT_FOLDER = config('PELIT_FOLDER')
 PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
-PVM = datetime.datetime.now().strftime("%d%m%Y")
+PVM = datetime.datetime.now().strftime("%y%m%d")
 
 
 def peli(args):
