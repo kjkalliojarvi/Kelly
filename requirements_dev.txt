@@ -1,4 +1,4 @@
-wheel==0.43.0
+wheel==0.46.2
 watchdog==2.3.1
 flake8==7.0.0
 tox==4.14.2
