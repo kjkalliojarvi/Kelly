@@ -1,12 +1,12 @@
 from . import get_data
 from . import hajota
 
-from decouple import config
+import os
 from collections import Counter
 import numpy as np
 import pandas as pd
 
-PELIT_FOLDER = config('PELIT_FOLDER')
+PELIT_FOLDER = os.environ['PELIT_FOLDER']
 
 
 def simulation(args):
@@ -38,7 +38,7 @@ def t_peli_simu(args, peliprosentit):
     for hajotus in gb.index:
         rivit = hajota.rivit_abcd(hajotus, systeemi)
         mini = round(min(df[df.hajotus == hajotus]['kerroin']), 1)
-        ka = round(pd.DataFrame.mean(df[df.hajotus == hajotus]['kerroin']), 1)
+        ka = round(df[df.hajotus == hajotus]['kerroin'].mean(), 1)
         maxi = round(max(df[df.hajotus == hajotus]['kerroin']), 1)
         rivimaara.append(len(rivit))
         minimi.append(mini)

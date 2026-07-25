@@ -1,6 +1,6 @@
 import json
 import string
-from decouple import config
+import os
 import datetime
 from collections import namedtuple
 from dataclasses import dataclass, field
@@ -11,7 +11,7 @@ from openpyxl import load_workbook
 from .validoi import tarkista_prosentit, troikka_yhdistelma_ok
 
 
-PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
+PROSENTIT_FOLDER = os.environ['PROSENTIT_FOLDER']
 PVM = datetime.datetime.now().strftime("%y%m%d")
 Bet = namedtuple('Bet', ['yhdistelma', 'kerroin', 'oma_kerroin', 'pelipanos'])
 

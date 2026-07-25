@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from collections import namedtuple
 import datetime
-from decouple import config
+import os
 from io import BytesIO
 import requests
 import sys
@@ -9,8 +9,8 @@ from zipfile import ZipFile
 
 
 BASEURL = 'https://www.veikkaus.fi/api/toto-info/v1/xml/'
-PELIT_FOLDER = config('PELIT_FOLDER')
-PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
+PELIT_FOLDER = os.environ['PELIT_FOLDER']
+PROSENTIT_FOLDER = os.environ['PROSENTIT_FOLDER']
 metadata = namedtuple('metadata', ['vaihto', 'jako', 'lyhenne', 'pvm', 'peli'])
 V_PVM = datetime.datetime.now().strftime("%d%m%Y")
 

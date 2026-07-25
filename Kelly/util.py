@@ -1,7 +1,7 @@
-from decouple import config
+import os
 
 
-PELIT_FOLDER = config('PELIT_FOLDER')
+PELIT_FOLDER = os.environ['PELIT_FOLDER']
 
 
 def write_to_file(bets, peli, args, metadata):

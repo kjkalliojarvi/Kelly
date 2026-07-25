@@ -1,6 +1,5 @@
 import argparse
 import datetime
-from decouple import config
 import signal
 import sys
 

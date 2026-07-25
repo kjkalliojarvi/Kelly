@@ -1,5 +1,5 @@
 import datetime
-from decouple import config
+import os
 from itertools import product
 
 from .get_data import (get_json, get_prosentit, yhdistelma_tn, p_1,
@@ -9,8 +9,8 @@ from .veikkaus import hae_kertoimet, Tprosentit
 from .validoi import troikka_yhdistelma_ok
 from .util import write_to_file
 
-PELIT_FOLDER = config('PELIT_FOLDER')
-PROSENTIT_FOLDER = config('PROSENTIT_FOLDER')
+PELIT_FOLDER = os.environ['PELIT_FOLDER']
+PROSENTIT_FOLDER = os.environ['PROSENTIT_FOLDER']
 PVM = datetime.datetime.now().strftime("%y%m%d")
 
 
