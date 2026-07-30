@@ -14,7 +14,10 @@ def simulation(args):
     if args.pelimuoto in ['t4', 't5', 't64', 't65', 't75', 't86']:
         metadata, peliprosentit = veikkaus.Tprosentit(
             args.ratakoodi, args.lahto, args.pelimuoto)
-        t_peli_simu(args, peliprosentit)
+        tulos, jakauma = t_peli_simu(args, peliprosentit)
+        return tulos, jakauma
+    else:
+        print(f'Peliä {args.pelimuoto} ei tueta tällä hetkellä.')
 
 
 def t_peli_simu(args, peliprosentit):
