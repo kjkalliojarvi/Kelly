@@ -58,7 +58,6 @@ def t_peli_simu(args, peliprosentit):
     vali = '-' * 80
     print(vali)
     jakauma = abcd_jakauma(tulos)
-    tulos['todennäköisyys'] = tulos['todennäköisyys'].map(lambda x: f'{x:.2%}')
     return tulos, jakauma
 
 
