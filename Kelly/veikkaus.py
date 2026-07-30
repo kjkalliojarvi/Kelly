@@ -67,10 +67,13 @@ def hae_kertoimet(koodi, lahto, peli, compressed=False):
 
 def Tprosentit(koodi, lahto, peli):
     koodi, lahto, peli = validate_params(koodi, lahto, peli)
-    url = f'{BASEURL}{koodi}_{V_PVM}_R{lahto}_{peli}_percs.xml'
-    response = requests.get(url)
+    pelifile = f'{koodi}_{V_PVM}_R{lahto}_{peli}_percs.xml'
+    response = requests.get(f'{BASEURL}{pelifile}')
     soup = BeautifulSoup(response.content, 'xml')
     kerroindata = soup.find('pool')
+    if kerroindata is None:
+        print(f'Ei kyseistä peliä: {pelifile}')
+        sys.exit(1)
     data = metadata(
         vaihto=float(kerroindata['net-sales'].replace(',', '.')),
         jako=float(kerroindata['net-pool-major-only'].replace(',', '.')),
