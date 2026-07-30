@@ -1,5 +1,6 @@
 from . import get_data
 from . import hajota
+from . import veikkaus
 
 import os
 from collections import Counter
@@ -11,9 +12,8 @@ PELIT_FOLDER = os.environ['PELIT_FOLDER']
 
 def simulation(args):
     if args.pelimuoto in ['t4', 't5', 't64', 't65', 't75', 't86']:
-        metadata, peliprosentit = get_data.Tprosentit(args.ratakoodi,
-                                                      args.lahto,
-                                                      args.pelimuoto)
+        metadata, peliprosentit = veikkaus.Tprosentit(
+            args.ratakoodi, args.lahto, args.pelimuoto)
         t_peli_simu(args, peliprosentit)
 
 
