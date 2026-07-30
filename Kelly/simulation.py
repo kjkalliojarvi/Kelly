@@ -51,10 +51,15 @@ def t_peli_simu(args, peliprosentit):
     tulos['minimi'] = minimi
     tulos['keskiarvo'] = keskiarvo
     tulos['maksimi'] = maksimi
-    print(tulos)
+    kerroin_fmt = '{:,.0f}'.format
+    print(tulos.to_string(formatters={'todennäköisyys': '{:.2%}'.format,
+                                      'minimi': kerroin_fmt,
+                                      'keskiarvo': kerroin_fmt,
+                                      'maksimi': kerroin_fmt}))
     vali = '-' * 80
     print(vali)
     jakauma = abcd_jakauma(tulos)
+    tulos['todennäköisyys'] = tulos['todennäköisyys'].map(lambda x: f'{x:.2%}')
     return tulos, jakauma
 
 
