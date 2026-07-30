@@ -52,8 +52,7 @@ def t_peli_simu(args, peliprosentit):
     tulos['keskiarvo'] = keskiarvo
     tulos['maksimi'] = maksimi
     kerroin_fmt = '{:,.0f}'.format
-    print(tulos.to_string(formatters={'todennäköisyys': '{:.2%}'.format,
-                                      'minimi': kerroin_fmt,
+    print(tulos.to_string(formatters={'minimi': kerroin_fmt,
                                       'keskiarvo': kerroin_fmt,
                                       'maksimi': kerroin_fmt}))
     vali = '-' * 80
