@@ -22,42 +22,25 @@ def analysoi(args):
                 laskuri[str(lahto)][numero] += 1
                 kokpanos[str(lahto)][numero] += panos
 
-    print('Rastit ' + str(riveja))
-    for i in range(1, 17):
-        print('{0:3d} |'.format(i), end="")
-    print('')
-    print(80 * '=')
-    for ll in range(1, lahtoja + 1):
-        for h in range(1, 17):
-            print('{0:3.0f} |'.format(laskuri[str(ll)][str(h)]), end="")
-        print('')
-    print('Rastit ')
-    a = 0
-    for i in range(1, 17):
-        print('{0:3d} |'.format(i), end="")
-    print('')
-    print(80 * '=')
-    for ll in range(1, lahtoja + 1):
-        a = 0
-        for h in range(1, 17):
-            print('{0:3.0f} |'.format(laskuri[str(ll)][str(h)]), end="")
-            a += laskuri[str(ll)][str(h)]
-        print(int(a))
-    print('%-osuudet')
-    for i in range(1, 17):
-        print('{0:3d} |'.format(i), end="")
-    print('')
-    print(80 * '=')
-    for ll in range(1, lahtoja + 1):
-        for h in range(1, 17):
-            print('{0:3.0f} |'.format(100*float(laskuri[str(ll)][str(h)])/float(riveja)), end="")
-        print('')
-    print('%-osuudet rahasta')
-    for i in range(1, 17):
-        print('{0:3d} |'.format(i), end="")
-    print('')
-    print(80 * '=')
-    for ll in range(1, lahtoja + 1):
-        for h in range(1, 17):
-            print('{0:3.0f} |'.format(100*float(kokpanos[str(ll)][str(h)])/float(total)), end="")
-        print('')
+    def tulosta(title, getter, rivisumma=False):
+        print(f'\n{title}')
+        header = f'  {"lä":>4} │' + ''.join(f'{h:>4}' for h in range(1, 17))
+        print(header)
+        print('  ' + '─' * (len(header) - 2))
+        for ll in range(1, lahtoja + 1):
+            solut = ''.join(f'{getter(ll, h):>4.0f}' for h in range(1, 17))
+            rivi = f'  {ll:>4} │{solut}'
+            if rivisumma:
+                summa = sum(getter(ll, h) for h in range(1, 17))
+                rivi += f'  = {summa:.0f}'
+            print(rivi)
+
+    print(f'\n{args.pelimuoto_.upper()}  —  rastit yhteensä: {riveja}')
+    tulosta('Rastit lähdöittäin',
+            lambda ll, h: laskuri[str(ll)][str(h)], rivisumma=True)
+    tulosta('%-osuudet riveistä',
+            lambda ll, h:
+                100 * float(laskuri[str(ll)][str(h)]) / float(riveja))
+    tulosta('%-osuudet rahasta',
+            lambda ll, h:
+                100 * float(kokpanos[str(ll)][str(h)]) / float(total))

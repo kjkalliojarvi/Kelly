@@ -94,8 +94,9 @@ Data flow for a bet calculation (`peli`):
 - Pool-type codes: `voi` win, `sij` place, `kak` exacta, `duo`, `tro`/`troikka` trifecta,
   and T-pool codes `t4 t5 t64 t65 t75 t86` (the number encodes legs, e.g. `t65` = 6 legs win
   / 5 legs consolation).
-- `Kelly/__init__.py` carries a stale `__version__` (`0.5.0`) vs the real version `0.6.0` in
-  `pyproject.toml`. `bumpversion` config in `setup.cfg` now targets `pyproject.toml`.
+- `Kelly/__init__.py` `__version__` (`0.6.0`) matches `pyproject.toml`; `bumpversion` config
+  in `setup.cfg` targets `pyproject.toml`.
 - `setup.cfg` remains only for `flake8` config (plain flake8 does not read `pyproject.toml`)
-  and `bumpversion`. `tox.ini` is stale (references py27–py36 and `python setup.py test`,
-  which no longer exists) — prefer `uv run` over tox.
+  and `bumpversion`. The old cookiecutter scaffolding (`tox.ini`, `MANIFEST.in`, the `docs/`
+  Sphinx tree, and the `README.rst`/`HISTORY.rst`/`CONTRIBUTING.rst` stubs) has been removed —
+  `README.md` is the project readme and the workflow is `uv run` + the `Makefile` targets.

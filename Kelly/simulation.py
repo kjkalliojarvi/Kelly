@@ -1,5 +1,6 @@
 from . import get_data
 from . import hajota
+from . import veikkaus
 
 import os
 from collections import Counter
@@ -11,9 +12,8 @@ PELIT_FOLDER = os.environ['PELIT_FOLDER']
 
 def simulation(args):
     if args.pelimuoto in ['t4', 't5', 't64', 't65', 't75', 't86']:
-        metadata, peliprosentit = get_data.Tprosentit(args.ratakoodi,
-                                                      args.lahto,
-                                                      args.pelimuoto)
+        metadata, peliprosentit = veikkaus.Tprosentit(
+            args.ratakoodi, args.lahto, args.pelimuoto)
         t_peli_simu(args, peliprosentit)
 
 
@@ -52,6 +52,7 @@ def t_peli_simu(args, peliprosentit):
     vali = '-' * 80
     print(vali)
     jakauma = abcd_jakauma(tulos)
+    return tulos, jakauma
 
 
 def run_simulation(t_peli, simulation, pelipros):
@@ -97,6 +98,7 @@ def abcd_jakauma(tulos):
         jakauma['X'][str(lkmX)] = jakauma['X'].get(str(lkmX), 0) + prob
     df = pd.DataFrame(jakauma)
     df_transposed = df.T
+    df_transposed.fillna(0, inplace=True)
     cols = sorted(df_transposed.columns.tolist())
     print(df_transposed[cols])
     return jakauma

@@ -7,7 +7,7 @@ from .get_data import (get_json, get_prosentit, yhdistelma_tn, p_1,
 from . import hajota
 from .veikkaus import hae_kertoimet, Tprosentit
 from .validoi import troikka_yhdistelma_ok
-from .util import write_to_file
+from .util import write_to_file, otsikko
 
 PELIT_FOLDER = os.environ['PELIT_FOLDER']
 PROSENTIT_FOLDER = os.environ['PROSENTIT_FOLDER']
@@ -39,19 +39,23 @@ def peli(args):
 
 
 def voittaja(args, prosentit, metadata, kertoimet):
-    print(f'Voittaja: Lähtö {args.lahto}, vaihto {metadata.vaihto}')
+    otsikko(f'VOITTAJA  {args.ratakoodi} lähtö {args.lahto}  '
+            f'(vaihto {metadata.vaihto})')
+    print(f'  {"nro":>3}  {"kerroin":>8}  {"oma":>7}  {"kelly":>7}')
     voit = Voittaja(args.lahto, prosentit)
     for voittaja in kertoimet:
         num = int(voittaja['runner'])
         vkerr = float(voittaja.string.replace(',', '.'))
         okelly, oma_kerr = voit.kelly(num, vkerr)
         if okelly > 0.05:
-            print(f'{num:2}: {vkerr:3.1f} / {oma_kerr:3.1f} / {100*okelly:3.1f} %')
-    print('----- * -----')
+            print(f'  {num:>3}  {vkerr:>8.1f}  {oma_kerr:>7.1f}  '
+                  f'{100*okelly:>6.1f} %')
 
 
 def sija(args, prosentit, metadata, kertoimet):
-    print(f'Sija: Lähtö {args.lahto}, vaihto {metadata.vaihto}')
+    otsikko(f'SIJA  {args.ratakoodi} lähtö {args.lahto}  '
+            f'(vaihto {metadata.vaihto})')
+    print(f'  {"nro":>3}  {"haarukka":>15}  {"oma":>7}')
     sij = Sija(args.lahto, prosentit)
     for sija in kertoimet:
         num = int(sija['runner'])
@@ -59,25 +63,24 @@ def sija(args, prosentit, metadata, kertoimet):
         haar = sija['low-probable'] + ' - ' + sija['high-probable']
         oma_kerr = sij.oma_kerroin(num)
         if oma_kerr and oma_kerr < yla:
-            print(f'{num:2}: {haar} / {oma_kerr:2.2f}')
-    print('----- * -----')
+            print(f'  {num:>3}  {haar:>15}  {oma_kerr:>7.2f}')
 
 
 def kaksari(args, prosentit, metadata, kertoimet):
-    print(f'Kaksari: Lähtö {args.lahto}, vaihto {metadata.vaihto}')
+    otsikko(f'KAKSARI  {args.ratakoodi} lähtö {args.lahto}  '
+            f'(vaihto {metadata.vaihto})')
+    print(f'  {"yhd.":>6}  {"kerroin":>8}  {"oma":>7}  {"kelly":>7}')
     kaks = Kaksari(args.lahto, prosentit)
     for kaksari in kertoimet:
         y = [int(y) for y in kaksari['combination'].split('-')]
         kkerr = float(kaksari.string.replace(',', '.'))
         okelly, omakk = kaks.kelly(y, kkerr)
         if okelly > 0.01:
-            print(f'{kaksari["combination"]:>5}: '
-                  f'{kkerr:5.1f} / {omakk:4.1f} / {100*okelly:4.1f} %')
-    print('----- * -----')
+            print(f'  {kaksari["combination"]:>6}  {kkerr:>8.1f}  '
+                  f'{omakk:>7.1f}  {100*okelly:>6.1f} %')
 
 
 def duo(args, prosentit, metadata, kertoimet):
-    print(f'Duo: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
     conf = get_json(PELIT_FOLDER + 'duo.json')
     duopeli = TPeli(args.lahto, prosentit, conf)
     yhdistelmat = list(product(conf['L1'], conf['L2']))
@@ -95,7 +98,6 @@ def duo(args, prosentit, metadata, kertoimet):
 
 
 def troikka(args, prosentit, metadata, kertoimet):
-    print(f'Troikka: Ravit {args.ratakoodi}, Lähtö {args.lahto}')
     conf = get_json(PELIT_FOLDER + 'troikka.json')
     tro = Troikka(args.lahto, prosentit, conf)
     bets = []
@@ -112,16 +114,16 @@ def troikka(args, prosentit, metadata, kertoimet):
 
 
 def t_peli(args, prosentit, metadata, kertoimet):
-    print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}')
     conf = get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
     pelimuoto = 't' + str(conf['lahtoja'])
     tpeli = TPeli(args.lahto, prosentit, conf)
     yhdistelmat = hajota.hajotus_rivit(conf)
     vain_ylin = 1
-    if args.pelimuoto in ['t65']:
-        vain_ylin = 2
-    if args.pelimuoto in ['t64', 't75', 't86']:
-        vain_ylin = 2.5
+    if args.vain_ylin:
+        if args.pelimuoto in ['t65']:
+            vain_ylin = 2
+        if args.pelimuoto in ['t64', 't75', 't86']:
+            vain_ylin = 2.5
     bets = []
     for yhd in kertoimet:
         y = tuple([int(y) for y in yhd['combination'].split('-')])
@@ -136,26 +138,27 @@ def t_peli(args, prosentit, metadata, kertoimet):
 
 
 def t_peli_pros(args, prosentit, metadata, peliprosentit):
-    print(f'{args.pelimuoto.upper()} : Ravit {args.ratakoodi}, Lähtö {args.lahto}: PROSENTIT')
     conf = get_json(PELIT_FOLDER + args.pelimuoto[:2] + '.json')
     pelimuoto = 't' + str(conf['lahtoja'])
     tpeli = TPeli(args.lahto, prosentit, conf)
-    pros = {}
     for i in range(conf['lahtoja']):
         lahto = str(int(args.lahto) + i)
         lahto_t_peli = str(i + 1)
-        pros[lahto_t_peli] = p_1(prosentit[lahto])
-        conf['L' + lahto_t_peli] = hajota.split_abcd(pros[lahto_t_peli], conf['rajat'])
+        # split_abcd luokittelee prosenttilistan (0..100) rajojen mukaan;
+        # conf['rajat'] on samoissa prosenttiyksiköissä
+        conf['L' + lahto_t_peli] = hajota.split_abcd(prosentit[lahto],
+                                                     conf['rajat'])
     yhdistelmat = hajota.hajotus_rivit(conf)
+    # peliprosentit avaimet ovat T-pelin sisäisiä lähtöindeksejä '1'..'N'
     pelipros = {}
     for key in peliprosentit.keys():
         pelipros[key] = p_1(peliprosentit[key])
     bets = []
     for yhd in yhdistelmat:
         # vain ylin voittoluokka
-        kerroin = (metadata.jako / metadata.vaihto) / yhdistelma_tn(yhd, pelipros)
-        yhdistelma = '/'.join([str(y) for y in yhd])
-        bet = tpeli.bet_size(yhdistelma, kerroin)
+        kerroin = ((metadata.jako / metadata.vaihto)
+                   / yhdistelma_tn(1, yhd, pelipros))
+        bet = tpeli.bet_size(yhd, kerroin)
         if bet:
             bets.append(bet)
-    write_to_file(bets, pelimuoto, args, metadata)
+    write_to_file(bets, pelimuoto, args, metadata, huomio='  [prosentit]')

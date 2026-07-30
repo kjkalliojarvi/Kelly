@@ -17,10 +17,14 @@ V_PVM = datetime.datetime.now().strftime("%d%m%Y")
 
 def tanaan(args):
     pvm = datetime.datetime.now().strftime('%d.%m.%Y')
+    print(f'\nRavit {pvm}')
+    print(f'  {"rata":<26}{"koodi":>8}{"ratakoodi":>11}{"tunnus":>10}')
+    print('  ' + '─' * 53)
     for ravit in listat():
         if ravit['date'] == pvm:
             a = ravit.find('pool')['file'].split('_')
-            print(ravit['name'], ravit['code'], ravit['track-code'], a[0])
+            print(f'  {ravit["name"]:<26}{ravit["code"]:>8}'
+                  f'{ravit["track-code"]:>11}{a[0]:>10}')
 
 
 def listat():
@@ -63,10 +67,13 @@ def hae_kertoimet(koodi, lahto, peli, compressed=False):
 
 def Tprosentit(koodi, lahto, peli):
     koodi, lahto, peli = validate_params(koodi, lahto, peli)
-    url = f'{BASEURL}{koodi}_{V_PVM}_R{lahto}_{peli}_percs.xml'
-    response = requests.get(url)
+    pelifile = f'{koodi}_{V_PVM}_R{lahto}_{peli}_percs.xml'
+    response = requests.get(f'{BASEURL}{pelifile}')
     soup = BeautifulSoup(response.content, 'xml')
     kerroindata = soup.find('pool')
+    if kerroindata is None:
+        print(f'Ei kyseistä peliä: {pelifile}')
+        sys.exit(1)
     data = metadata(
         vaihto=float(kerroindata['net-sales'].replace(',', '.')),
         jako=float(kerroindata['net-pool-major-only'].replace(',', '.')),
