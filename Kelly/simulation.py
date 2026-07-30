@@ -52,6 +52,7 @@ def t_peli_simu(args, peliprosentit):
     vali = '-' * 80
     print(vali)
     jakauma = abcd_jakauma(tulos)
+    return tulos, jakauma
 
 
 def run_simulation(t_peli, simulation, pelipros):
@@ -97,6 +98,7 @@ def abcd_jakauma(tulos):
         jakauma['X'][str(lkmX)] = jakauma['X'].get(str(lkmX), 0) + prob
     df = pd.DataFrame(jakauma)
     df_transposed = df.T
+    df_transposed.fillna(0, inplace=True)
     cols = sorted(df_transposed.columns.tolist())
     print(df_transposed[cols])
     return jakauma
