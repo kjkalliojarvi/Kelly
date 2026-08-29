@@ -14,7 +14,7 @@ PACKAGE_NAME = 'kelly'
 # Pool-type codes. The single-race pools plus the multi-leg T-pools are valid
 # for `peli`; only the T-pools can be simulated.
 YKSITTAISPELIT = ['voi', 'sij', 'kak', 'duo', 'tro']
-T_PELIT = ['t4', 't5', 't64', 't65', 't75', 't86']
+T_PELIT = ['t4', 't5', 't64', 't65', 't75', 't85', 't86']
 PELIMUODOT = YKSITTAISPELIT + T_PELIT
 
 
