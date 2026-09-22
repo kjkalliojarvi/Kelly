@@ -40,9 +40,10 @@ def t_peli_simu(args, peliprosentit):
     keskiarvo = []
     for hajotus in gb.index:
         rivit = hajota.rivit_abcd(hajotus, systeemi)
-        mini = round(min(df[df.hajotus == hajotus]['kerroin']), 1)
-        ka = round(df[df.hajotus == hajotus]['kerroin'].mean(), 1)
-        maxi = round(max(df[df.hajotus == hajotus]['kerroin']), 1)
+        kerroin = df[df.hajotus == hajotus]['kerroin']
+        mini = round(kerroin.min(), 1)
+        ka = round(kerroin.mean(), 1)
+        maxi = round(kerroin.max(), 1)
         rivimaara.append(len(rivit))
         minimi.append(mini)
         maksimi.append(maxi)
@@ -82,14 +83,14 @@ def run_simulation(t_peli, simulation, pelipros):
         systeemi[lahto] = abcd
     apu = []
     for result in results:
-        apu.append((''.join(sorted(result[0])), 0.65 * t_peli['panos'] / result[1]))
+        t_panos = 0.65 * t_peli['panos'] / result[1]
+        apu.append((''.join(sorted(result[0])), t_panos))
     return apu, systeemi
 
 
 def abcd_jakauma(tulos):
     jakauma = {'A': {}, 'B': {}, 'C': {}, 'D': {}, 'X': {}}
     for _, row in tulos.iterrows():
-        lahtoja = len(row['hajotus'])
         abcd = Counter(row['hajotus'])
         prob = row['todennäköisyys']
         lkmA = abcd.get('A', 0)
