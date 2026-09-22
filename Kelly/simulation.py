@@ -90,9 +90,9 @@ def run_simulation(t_peli, simulation, pelipros):
 
 def abcd_jakauma(tulos):
     jakauma = {'A': {}, 'B': {}, 'C': {}, 'D': {}, 'X': {}}
-    for _, row in tulos.iterrows():
-        abcd = Counter(row['hajotus'])
-        prob = row['todennäköisyys']
+    for row in tulos.itertuples():
+        abcd = Counter(row.hajotus)
+        prob = getattr(row, 'todennäköisyys')
         lkmA = abcd.get('A', 0)
         jakauma['A'][str(lkmA)] = jakauma['A'].get(str(lkmA), 0) + prob
         lkmB = abcd.get('B', 0)
