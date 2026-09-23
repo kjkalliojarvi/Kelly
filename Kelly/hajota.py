@@ -12,7 +12,7 @@ def hajotus_rivit(systeemi):
     total_rivit = set()
     for hajotus in systeemi['hajotus']:
         rivit = rivit_abcd(hajotus, systeemi)
-        total_rivit = set.union(total_rivit, rivit)
+        total_rivit.update(rivit)
     return total_rivit
 
 
