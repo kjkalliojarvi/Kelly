@@ -1,5 +1,4 @@
 import json
-import string
 import os
 import datetime
 from collections import namedtuple
@@ -8,7 +7,7 @@ import sys
 from math import prod
 from openpyxl import load_workbook
 
-from .validoi import tarkista_prosentit, troikka_yhdistelma_ok
+from .validoi import tarkista_prosentit
 
 
 PROSENTIT_FOLDER = os.environ['PROSENTIT_FOLDER']
