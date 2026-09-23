@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from Kelly import get_data, bet_calc, veikkaus, validoi
+from Kelly import get_data, bet_calc, veikkaus
 
 
 class TestTPeliPros:
