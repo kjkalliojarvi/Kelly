@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from collections import namedtuple
 import datetime
+import functools
 import os
 from io import BytesIO
 import requests
@@ -27,6 +28,7 @@ def tanaan(args):
                   f'{ravit["track-code"]:>11}{a[0]:>10}')
 
 
+@functools.lru_cache()
 def listat():
     cards = requests.get(BASEURL + 'cards.xml')
     soup = BeautifulSoup(cards.content, 'xml')
