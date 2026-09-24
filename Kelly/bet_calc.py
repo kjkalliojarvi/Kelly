@@ -83,7 +83,7 @@ def kaksari(args, prosentit, metadata, kertoimet):
 def duo(args, prosentit, metadata, kertoimet):
     conf = get_json(PELIT_FOLDER + 'duo.json')
     duopeli = TPeli(args.lahto, prosentit, conf)
-    yhdistelmat = list(product(conf['L1'], conf['L2']))
+    yhdistelmat = set(product(conf['L1'], conf['L2']))
     bets = []
     for yhd in kertoimet:
         y = tuple([int(y) for y in yhd['combination'].split('-')])
