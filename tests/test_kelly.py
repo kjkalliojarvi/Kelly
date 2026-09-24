@@ -2,7 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from Kelly import get_data, bet_calc
+from Kelly import get_data, bet_calc, validoi
+
 
 class TestTPeliPros:
     """Regression test for the ``peli ... --prosentit`` T-pool path.
