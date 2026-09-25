@@ -15,7 +15,8 @@ PVM = datetime.datetime.now().strftime("%y%m%d")
 
 
 def peli(args):
-    filename = f'{PROSENTIT_FOLDER}{args.ratakoodi}_{PVM}.json'
+    turvallinen_ratakoodi = os.path.basename(args.ratakoodi)
+    filename = f'{PROSENTIT_FOLDER}{turvallinen_ratakoodi}_{PVM}.json'
     prosentit = get_prosentit(filename)
     if args.pelimuoto in ['voi', 'sij', 'kak', 'duo', 'tro']:
         kutsu = {'voi': voittaja, 'sij': sija, 'kak': kaksari,
