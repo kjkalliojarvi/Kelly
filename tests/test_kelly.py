@@ -70,3 +70,10 @@ class TestMethods:
                       7: 0.038131553860819824, 8: 0.12392755004766444,
                       9: 0.09056244041944708, 10: 0.10676835081029551,
                       11: 0.06196377502383222})
+
+
+def test_voittaja_oma_kerroin():
+    v = get_data.Voittaja(lahto='1', prosentit={'1': [50, 0, 50]})
+    assert v.oma_kerroin(1) == 2.0
+    assert v.oma_kerroin(2) is None
+    assert v.oma_kerroin(3) == 2.0
