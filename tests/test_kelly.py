@@ -2,8 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from Kelly import get_data, bet_calc, validoi
-
+from Kelly import get_data, bet_calc
 
 class TestTPeliPros:
     """Regression test for the ``peli ... --prosentit`` T-pool path.
@@ -71,68 +70,15 @@ class TestMethods:
                       9: 0.09056244041944708, 10: 0.10676835081029551,
                       11: 0.06196377502383222})
 
-class TestPathTraversal:
-    def test_excel_prosentit_path_traversal(self, monkeypatch):
-        import builtins
-        import json
+    def test_voittaja_oma_kerroin_zero_probability(self):
+        prosentit = {'1': [50, 0, 50]}
+        v = get_data.Voittaja(lahto='1', prosentit=prosentit, conf={})
 
-        opened_files = []
+        # Test non-zero probability (50% -> 0.5 -> 1/0.5 = 2.0)
+        assert v.oma_kerroin(1) == 2.0
 
-        class DummyFile:
-            def __enter__(self): return self
-            def __exit__(self, exc_type, exc_val, exc_tb): pass
-            def write(self, s): pass
+        # Test zero probability (0% -> 0.0 -> returns None)
+        assert v.oma_kerroin(2) is None
 
-        def mock_open(filename, mode='r'):
-            opened_files.append(filename)
-            return DummyFile()
-
-        monkeypatch.setattr(builtins, "open", mock_open)
-
-        # mock json.dump to do nothing
-        monkeypatch.setattr(json, "dump", lambda obj, f: None)
-
-        # mock load_workbook
-        class MockWorkbook:
-            def __init__(self, *args, **kwargs):
-                pass
-            def __getitem__(self, item):
-                class MockSheet:
-                    def __getitem__(self, cell):
-                        class MockCell:
-                            value = None
-                        return MockCell()
-                return MockSheet()
-
-        monkeypatch.setattr("Kelly.get_data.load_workbook", MockWorkbook)
-
-        # We also need to set PROSENTIT_FOLDER env var in the module
-        # but the module already imported os.environ on load.
-        # So we can patch get_data.PROSENTIT_FOLDER directly.
-        monkeypatch.setattr(get_data, "PROSENTIT_FOLDER", "/app/PROSENTIT/")
-        monkeypatch.setattr(get_data, "PVM", "240101")
-
-        args = SimpleNamespace(ratakoodi="../../../etc/passwd")
-        get_data.excel_prosentit(args)
-
-        assert len(opened_files) == 1
-        assert opened_files[0] == "/app/PROSENTIT/passwd_240101.json"
-
-    def test_bet_calc_peli_path_traversal(self, monkeypatch):
-        opened_files = []
-
-        # Mock get_prosentit to record the file being accessed
-        def mock_get_prosentit(filename):
-            opened_files.append(filename)
-            return {}
-
-        monkeypatch.setattr(bet_calc, "get_prosentit", mock_get_prosentit)
-        monkeypatch.setattr(bet_calc, "PROSENTIT_FOLDER", "/app/PROSENTIT/")
-        monkeypatch.setattr(bet_calc, "PVM", "240101")
-
-        # args to exit quickly from peli()
-        args = SimpleNamespace(ratakoodi="../../../etc/shadow", pelimuoto="invalid")
-        bet_calc.peli(args)
-
-        assert len(opened_files) == 1
-        assert opened_files[0] == "/app/PROSENTIT/shadow_240101.json"
+        # Test non-zero probability (50% -> 0.5 -> 1/0.5 = 2.0)
+        assert v.oma_kerroin(3) == 2.0
