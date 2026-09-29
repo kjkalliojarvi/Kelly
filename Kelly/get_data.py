@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import datetime
 from collections import namedtuple
 from dataclasses import dataclass, field
@@ -20,7 +21,7 @@ def get_json(filename):
             jsonfile = json.loads(rawfile.read())
     except FileNotFoundError:
         print(f'Ei fileä: {filename}')
-        raise
+        sys.exit(1)
     return jsonfile
 
 
