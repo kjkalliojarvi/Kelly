@@ -35,11 +35,11 @@ def tarkista_prosentit(pros, filename):
         pros_lahto = pros[lahto]
         summa = sum(pros_lahto)
         if summa != 100:
-            raise Exception(f'Lähtö {lahto}: prosenttien summa {summa}')
+            raise ValueError(f'Lähtö {lahto}: prosenttien summa {summa}')
         poissa = [int(pois) for pois in hepat[lahto]['poissa']]
         for pois in poissa:
             if pros_lahto[pois - 1] > 0:
-                raise Exception(f'Lähtö {lahto}: Numero {pois} on poissa')
+                raise ValueError(f'Lähtö {lahto}: Numero {pois} on poissa')
 
 
 def hepoja(koodi):
