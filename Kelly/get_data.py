@@ -3,7 +3,6 @@ import os
 import datetime
 from collections import namedtuple
 from dataclasses import dataclass, field
-import sys
 from math import prod
 from openpyxl import load_workbook
 
@@ -21,7 +20,7 @@ def get_json(filename):
             jsonfile = json.loads(rawfile.read())
     except FileNotFoundError:
         print(f'Ei fileä: {filename}')
-        sys.exit(1)
+        raise
     return jsonfile
 
 

@@ -2,8 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from Kelly import get_data, bet_calc, validoi
-
+from Kelly import get_data, bet_calc
 
 class TestTPeliPros:
     """Regression test for the ``peli ... --prosentit`` T-pool path.
@@ -71,9 +70,15 @@ class TestMethods:
                       9: 0.09056244041944708, 10: 0.10676835081029551,
                       11: 0.06196377502383222})
 
+    def test_voittaja_oma_kerroin_zero_probability(self):
+        prosentit = {'1': [50, 0, 50]}
+        v = get_data.Voittaja(lahto='1', prosentit=prosentit, conf={})
 
-def test_voittaja_oma_kerroin():
-    v = get_data.Voittaja(lahto='1', prosentit={'1': [50, 0, 50]})
-    assert v.oma_kerroin(1) == 2.0
-    assert v.oma_kerroin(2) is None
-    assert v.oma_kerroin(3) == 2.0
+        # Test non-zero probability (50% -> 0.5 -> 1/0.5 = 2.0)
+        assert v.oma_kerroin(1) == 2.0
+
+        # Test zero probability (0% -> 0.0 -> returns None)
+        assert v.oma_kerroin(2) is None
+
+        # Test non-zero probability (50% -> 0.5 -> 1/0.5 = 2.0)
+        assert v.oma_kerroin(3) == 2.0
