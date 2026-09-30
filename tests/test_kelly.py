@@ -82,3 +82,8 @@ class TestMethods:
 
         # Test non-zero probability (50% -> 0.5 -> 1/0.5 = 2.0)
         assert v.oma_kerroin(3) == 2.0
+
+    def test_get_json_file_not_found(self):
+        with pytest.raises(SystemExit) as excinfo:
+            get_data.get_json('nonexistent_file.json')
+        assert excinfo.value.code == 1
