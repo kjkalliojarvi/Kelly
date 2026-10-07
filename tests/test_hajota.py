@@ -1,5 +1,3 @@
-import pytest
-
 from Kelly.hajota import get_category, split_abcd
 
 
