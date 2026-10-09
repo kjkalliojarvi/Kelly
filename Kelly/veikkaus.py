@@ -30,7 +30,7 @@ def tanaan(args):
 
 @functools.lru_cache()
 def listat():
-    cards = requests.get(BASEURL + 'cards.xml')
+    cards = requests.get(BASEURL + 'cards.xml', timeout=10)
     soup = BeautifulSoup(cards.content, 'xml')
     return soup.find_all('card')
 
@@ -40,7 +40,7 @@ def hae_kertoimet(koodi, lahto, peli, compressed=False):
     pelifile = f'{koodi}_{V_PVM}_R{lahto}_{peli}.xml'
     url = f'{BASEURL}{pelifile}'
     if compressed:  # T-pelit
-        response = requests.get(url + '.zip')
+        response = requests.get(url + '.zip', timeout=10)
         if response.content:
             with ZipFile(BytesIO(response.content)) as zipped_file:
                 with zipped_file.open(pelifile) as unzipped_file:
@@ -49,7 +49,7 @@ def hae_kertoimet(koodi, lahto, peli, compressed=False):
             print(f'Ei kyseistä peliä: {pelifile}')
             sys.exit(1)
     else:  # muut
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         if response.content:
             kerroinxml = response.content
         else:
@@ -70,7 +70,7 @@ def hae_kertoimet(koodi, lahto, peli, compressed=False):
 def Tprosentit(koodi, lahto, peli):
     koodi, lahto, peli = validate_params(koodi, lahto, peli)
     pelifile = f'{koodi}_{V_PVM}_R{lahto}_{peli}_percs.xml'
-    response = requests.get(f'{BASEURL}{pelifile}')
+    response = requests.get(f'{BASEURL}{pelifile}', timeout=10)
     soup = BeautifulSoup(response.content, 'xml')
     kerroindata = soup.find('pool')
     if kerroindata is None:
