@@ -1,6 +1,5 @@
 import datetime
 import os
-from itertools import product
 
 from .get_data import (get_json, get_prosentit, yhdistelma_tn, p_1,
                        Voittaja, Sija, Kaksari, Troikka, TPeli)
@@ -84,11 +83,10 @@ def kaksari(args, prosentit, metadata, kertoimet):
 def duo(args, prosentit, metadata, kertoimet):
     conf = get_json(PELIT_FOLDER + 'duo.json')
     duopeli = TPeli(args.lahto, prosentit, conf)
-    yhdistelmat = list(product(conf['L1'], conf['L2']))
     bets = []
     for yhd in kertoimet:
         y = tuple([int(y) for y in yhd['combination'].split('-')])
-        if y in yhdistelmat:
+        if y[0] in conf['L1'] and y[1] in conf['L2']:
             kerroin = float(yhd.string.replace(',', '.'))
             if int(kerroin) == 0:
                 kerroin = metadata.jako  # max kerroin jos yhdistelmää ei pelattu
