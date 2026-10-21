@@ -26,6 +26,61 @@ def sigterm_exit(_sig_func=None):
     sys.exit(0)
 
 
+def _add_tanaan_parser(subparser):
+    parser_tanaan = subparser.add_parser(
+        'tanaan', help='Listaa tämän päivän ravit Veikkauksen rajapinnasta')
+    parser_tanaan.set_defaults(func=tanaan)
+
+
+def _add_prosentit_parser(subparser):
+    parser_prosentit = subparser.add_parser(
+        'prosentit',
+        help='Lue prosentit.xlsx ja kirjoita radan todennäköisyys-JSON')
+    parser_prosentit.add_argument('ratakoodi', help='Radan koodi, esim. H')
+    parser_prosentit.set_defaults(func=excel_prosentit)
+
+
+def _add_peli_parser(subparser):
+    parser_peli = subparser.add_parser(
+        'peli', help='Laske Kelly-panokset yhdelle pelimuodolle')
+    parser_peli.add_argument('ratakoodi', help='Radan koodi, esim. H')
+    parser_peli.add_argument('lahto', help='Lähdön numero')
+    parser_peli.add_argument('pelimuoto', choices=PELIMUODOT,
+                             metavar='pelimuoto',
+                             help='Pelimuoto: %(choices)s')
+    parser_peli.add_argument('--prosentit', default=False, action='store_true',
+                             help='Käytä poolin toteutuneita pelimääriä '
+                                  'kertoimien sijaan')
+    parser_peli.add_argument('-y', '--vain-ylin', dest='vain_ylin',
+                             default=True,
+                             action=argparse.BooleanOptionalAction,
+                             help='Huomioi vain ylin voittoluokka '
+                                  'T-peleissä (oletus: kyllä). --no-vain-ylin '
+                                  'poistaa voittoluokkakertoimen')
+    parser_peli.set_defaults(func=peli)
+
+
+def _add_simu_parser(subparser):
+    parser_simu = subparser.add_parser(
+        'simu', help='Monte Carlo -simulaatio T-pelin hajotukselle')
+    parser_simu.add_argument('ratakoodi', help='Radan koodi, esim. H')
+    parser_simu.add_argument('lahto', help='Lähdön numero')
+    parser_simu.add_argument('pelimuoto', choices=T_PELIT,
+                             metavar='pelimuoto',
+                             help='T-pelimuoto: %(choices)s')
+    parser_simu.set_defaults(func=simulation)
+
+
+def _add_analyysi_parser(subparser):
+    parser_analyysi = subparser.add_parser(
+        'analyysi', help='Analysoi valmis .peli-tiedosto (ristiintaulukointi)')
+    parser_analyysi.add_argument('pelimuoto_', metavar='pelimuoto',
+                                 choices=['duo', 'troikka', 't4', 't5', 't6',
+                                          't7', 't8'],
+                                 help='Pelimuoto: %(choices)s')
+    parser_analyysi.set_defaults(func=analysoi)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog=PACKAGE_NAME,
@@ -48,50 +103,11 @@ def build_parser():
     subparser = parser.add_subparsers(title='Komennot', dest='command',
                                       metavar='<komento>')
 
-    parser_tanaan = subparser.add_parser(
-        'tanaan', help='Listaa tämän päivän ravit Veikkauksen rajapinnasta')
-    parser_tanaan.set_defaults(func=tanaan)
-
-    parser_prosentit = subparser.add_parser(
-        'prosentit',
-        help='Lue prosentit.xlsx ja kirjoita radan todennäköisyys-JSON')
-    parser_prosentit.add_argument('ratakoodi', help='Radan koodi, esim. H')
-    parser_prosentit.set_defaults(func=excel_prosentit)
-
-    parser_peli = subparser.add_parser(
-        'peli', help='Laske Kelly-panokset yhdelle pelimuodolle')
-    parser_peli.add_argument('ratakoodi', help='Radan koodi, esim. H')
-    parser_peli.add_argument('lahto', help='Lähdön numero')
-    parser_peli.add_argument('pelimuoto', choices=PELIMUODOT,
-                             metavar='pelimuoto',
-                             help='Pelimuoto: %(choices)s')
-    parser_peli.add_argument('--prosentit', default=False, action='store_true',
-                             help='Käytä poolin toteutuneita pelimääriä '
-                                  'kertoimien sijaan')
-    parser_peli.add_argument('-y', '--vain-ylin', dest='vain_ylin',
-                             default=True,
-                             action=argparse.BooleanOptionalAction,
-                             help='Huomioi vain ylin voittoluokka '
-                                  'T-peleissä (oletus: kyllä). --no-vain-ylin '
-                                  'poistaa voittoluokkakertoimen')
-    parser_peli.set_defaults(func=peli)
-
-    parser_simu = subparser.add_parser(
-        'simu', help='Monte Carlo -simulaatio T-pelin hajotukselle')
-    parser_simu.add_argument('ratakoodi', help='Radan koodi, esim. H')
-    parser_simu.add_argument('lahto', help='Lähdön numero')
-    parser_simu.add_argument('pelimuoto', choices=T_PELIT,
-                             metavar='pelimuoto',
-                             help='T-pelimuoto: %(choices)s')
-    parser_simu.set_defaults(func=simulation)
-
-    parser_analyysi = subparser.add_parser(
-        'analyysi', help='Analysoi valmis .peli-tiedosto (ristiintaulukointi)')
-    parser_analyysi.add_argument('pelimuoto_', metavar='pelimuoto',
-                                 choices=['duo', 'troikka', 't4', 't5', 't6',
-                                          't7', 't8'],
-                                 help='Pelimuoto: %(choices)s')
-    parser_analyysi.set_defaults(func=analysoi)
+    _add_tanaan_parser(subparser)
+    _add_prosentit_parser(subparser)
+    _add_peli_parser(subparser)
+    _add_simu_parser(subparser)
+    _add_analyysi_parser(subparser)
 
     return parser
 
