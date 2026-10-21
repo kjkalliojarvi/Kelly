@@ -35,15 +35,17 @@ def split_abcd(prosentit, rajat):
     Jakaa lähdön prosentit ABCD:hen
     """
     L = {'A': [], 'B': [], 'C': [], 'D': [], 'X': []}
+    limits = [
+        ('A', rajat['A_to_B']),
+        ('B', rajat['B_to_C']),
+        ('C', rajat['C_to_D']),
+        ('D', rajat['D_to_X'])
+    ]
     for i, num in enumerate(prosentit, 1):
-        if num > rajat['A_to_B']:
-            L['A'].append(i)
-        elif num > rajat['B_to_C']:
-            L['B'].append(i)
-        elif num > rajat['C_to_D']:
-            L['C'].append(i)
-        elif num > rajat['D_to_X']:
-            L['D'].append(i)
+        for category, limit in limits:
+            if num > limit:
+                L[category].append(i)
+                break
         else:
             L['X'].append(i)
     return L
