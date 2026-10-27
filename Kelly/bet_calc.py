@@ -85,7 +85,8 @@ def duo(args, prosentit, metadata, kertoimet):
     duopeli = TPeli(args.lahto, prosentit, conf)
     bets = []
     for yhd in kertoimet:
-        y = tuple([int(y) for y in yhd['combination'].split('-')])
+        a, b = yhd['combination'].split('-')
+        y = (int(a), int(b))
         if y[0] in conf['L1'] and y[1] in conf['L2']:
             kerroin = float(yhd.string.replace(',', '.'))
             if int(kerroin) == 0:
